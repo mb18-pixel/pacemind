@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# PaceMind
 
-## Getting Started
+KI-Laufcoach Web-App mit Next.js, Tailwind CSS, Supabase Auth und Groq (`llama-3.3-70b-versatile`).
 
-First, run the development server:
+## Features
+
+- **Account-System** – Registrierung & Login mit Supabase Auth (E-Mail + Passwort)
+- **Einwilligung** – Datenschutz & Mindestalter (18+) beim ersten Login
+- **Coach-Chat** – KI mit Kontext aus den letzten 5 Läufen des Nutzers
+- **Läufe tracken** – Pro Nutzer in Supabase (Distanz, Pace, HF, Befinden, Notizen)
+- **Coach-Wissen** – Anpassbar in `lib/coach-knowledge.js`
+- **Logout** – Abmelden im Header
+
+## Setup
+
+### 1. Abhängigkeiten
+
+```bash
+npm install
+```
+
+### 2. Umgebungsvariablen
+
+```bash
+cp .env.local.example .env.local
+```
+
+Eintragen:
+
+- `GROQ_API_KEY` – [Groq Console](https://console.groq.com/keys)
+- `NEXT_PUBLIC_SUPABASE_URL` – Supabase Projekt-URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` – Supabase Anon Key
+
+### 3. Supabase Datenbank
+
+1. Projekt auf [supabase.com](https://supabase.com) anlegen
+2. Unter **SQL Editor** den Inhalt von `supabase/schema.sql` ausführen
+3. Unter **Authentication → URL Configuration** die Site URL setzen (z. B. `http://localhost:3000`)
+4. Optional: E-Mail-Bestätigung unter **Authentication → Providers → Email** deaktivieren für schnelleres lokales Testen
+
+### 4. Dev-Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+App: [http://localhost:3000](http://localhost:3000) → Weiterleitung zu Login oder Chat
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Routen
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Route | Beschreibung |
+|-------|----------------|
+| `/login` | Anmelden |
+| `/register` | Registrieren |
+| `/consent` | Einwilligungsdialog (erstes Login) |
+| `/chat` | Coach-Chat (nach Login) |
+| `/laeufe` | Läufe eintragen & verwalten |
 
-## Learn More
+Nicht eingeloggte Nutzer werden zu `/login` weitergeleitet.
 
-To learn more about Next.js, take a look at the following resources:
+## Coach-Wissen
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Bearbeite `lib/coach-knowledge.js` – die KI nutzt diesen Text als Systemgrundlage.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Datenmodell
 
-## Deploy on Vercel
+**profiles**: `id`, `privacy_accepted_at`, `age_confirmed_at`, `created_at`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**runs**: `id`, `user_id`, `distanz_km`, `pace`, `herzfrequenz` (Ø bpm), `herzfrequenz_max` (max bpm), `befinden`, `notizen`, `created_at`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Row Level Security: Jeder Nutzer sieht nur eigene Daten.
