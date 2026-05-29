@@ -37,7 +37,7 @@ export default function ConsentDialog() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Speichern fehlgeschlagen");
 
-      router.push("/chat");
+      router.push("/onboarding");
       router.refresh();
     } catch (err) {
       setError(err.message);

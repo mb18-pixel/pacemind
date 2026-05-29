@@ -34,7 +34,7 @@ Eintragen:
 ### 3. Supabase Datenbank
 
 1. Projekt auf [supabase.com](https://supabase.com) anlegen
-2. Unter **SQL Editor** den Inhalt von `supabase/schema.sql` ausführen
+2. Unter **SQL Editor** den Inhalt von `supabase/schema.sql` ausführen (bestehende DB: zusätzlich `migration-onboarding.sql`)
 3. Unter **Authentication → URL Configuration** die Site URL setzen (z. B. `http://localhost:3000`)
 4. Optional: E-Mail-Bestätigung unter **Authentication → Providers → Email** deaktivieren für schnelleres lokales Testen
 
@@ -53,7 +53,8 @@ App: [http://localhost:3000](http://localhost:3000) → Weiterleitung zu Login o
 | `/login` | Anmelden |
 | `/register` | Registrieren |
 | `/consent` | Einwilligungsdialog (erstes Login) |
-| `/chat` | Coach-Chat (nach Login) |
+| `/onboarding` | Profil-Onboarding (einmalig) |
+| `/chat` | Coach-Chat (nach Onboarding) |
 | `/laeufe` | Läufe eintragen & verwalten |
 
 Nicht eingeloggte Nutzer werden zu `/login` weitergeleitet.

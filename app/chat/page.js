@@ -1,11 +1,15 @@
+"use client";
+
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import ChatInterface from "@/components/ChatInterface";
+import PushPermissionCard from "@/components/PushPermissionCard";
 import { MessageSquare } from "lucide-react";
 
-export const metadata = {
-  title: "Coach-Chat – PaceMind",
-};
+function ChatContent() {
+  const searchParams = useSearchParams();
+  const context = searchParams.get("context");
 
-export default function ChatPage() {
   return (
     <div className="space-y-6">
       <div className="animate-fade-up">
@@ -18,12 +22,23 @@ export default function ChatPage() {
               Coach-Chat
             </h1>
             <p className="text-sm text-text-muted">
-              Deine letzten 5 Läufe fließen in jede Antwort ein.
+              Verbunden mit Kalender, Zeitslots, Läufen und Wetter.
             </p>
           </div>
         </div>
       </div>
-      <ChatInterface />
+      <PushPermissionCard />
+      <ChatInterface initialPrompt={context} />
     </div>
+  );
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense
+      fallback={<p className="text-text-muted">Coach wird geladen …</p>}
+    >
+      <ChatContent />
+    </Suspense>
   );
 }

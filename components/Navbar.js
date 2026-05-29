@@ -2,19 +2,16 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  Footprints,
-  LogOut,
-  MessageSquare,
-} from "lucide-react";
+import { Calendar, Footprints, LogOut, MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 const links = [
   { href: "/chat", label: "Coach", icon: MessageSquare },
+  { href: "/kalender", label: "Kalender", icon: Calendar },
   { href: "/laeufe", label: "Läufe", icon: Footprints },
 ];
 
-const authPaths = ["/login", "/register", "/consent"];
+const authPaths = ["/login", "/register", "/consent", "/onboarding"];
 
 export default function Navbar() {
   const pathname = usePathname();

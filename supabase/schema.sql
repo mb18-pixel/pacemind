@@ -6,6 +6,19 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   privacy_accepted_at timestamptz,
   age_confirmed_at timestamptz,
+  onboarding_abgeschlossen boolean default false,
+  vorname text,
+  geschlecht text,
+  alter_jahre integer,
+  gewicht_kg numeric(5, 1),
+  koerperfettanteil numeric(4, 1),
+  stadt text,
+  land text,
+  latitude numeric(9, 6),
+  longitude numeric(9, 6),
+  fitnesslevel text,
+  ziel text,
+  trainingstage text,
   created_at timestamptz default now()
 );
 

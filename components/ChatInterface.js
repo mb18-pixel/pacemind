@@ -1,44 +1,70 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Send } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Send, Mic } from "lucide-react";
 
 const WELCOME =
-  "Hallo! Ich bin dein PaceMind Laufcoach. Frag mich zu Training, Pace, Erholung oder deinen letzten Läufen – ich kenne deine eingetragenen Daten.";
+  "Hallo! Ich bin dein PaceMind Laufcoach. Ich kenne deinen Trainingsplan, deine Zeitslots, Läufe und das Wetter – frag mich alles zum Training.";
 
-export default function ChatInterface() {
+export const PLAN_UPDATED_EVENT = "pacemind-plan-updated";
+
+export default function ChatInterface({ initialPrompt = null }) {
+  const router = useRouter();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [supportsSpeech, setSupportsSpeech] = useState(null);
   const bottomRef = useRef(null);
+  const inputRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const initialSent = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    setSupportsSpeech(!!SpeechRecognition);
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    const text = input.trim();
-    if (!text || loading) return;
+  useEffect(() => {
+    if (initialPrompt && !initialSent.current) {
+      initialSent.current = true;
+      sendMessage(initialPrompt);
+    }
+  }, [initialPrompt]);
+
+  function notifyPlanUpdated() {
+    window.dispatchEvent(new CustomEvent(PLAN_UPDATED_EVENT));
+    router.refresh();
+  }
+
+  async function sendMessage(text) {
+    if (!text.trim() || loading) return;
 
     setError(null);
-    const userMessage = { role: "user", content: text };
+    const userMessage = { role: "user", content: text.trim() };
     const nextMessages = [...messages, userMessage];
     setMessages(nextMessages);
     setInput("");
     setLoading(true);
 
     try {
-      const apiMessages = nextMessages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
-
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: apiMessages }),
+        body: JSON.stringify({
+          messages: nextMessages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
       });
 
       const data = await res.json();
@@ -48,12 +74,106 @@ export default function ChatInterface() {
         ...prev,
         { role: "assistant", content: data.reply },
       ]);
+
+      if (
+        data.planUpdated ||
+        data.action?.type === "plan_day_updated" ||
+        data.action?.type === "plan_replanned"
+      ) {
+        notifyPlanUpdated();
+      }
     } catch (err) {
       setError(err.message);
       setMessages((prev) => prev.slice(0, -1));
       setInput(text);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    await sendMessage(input);
+  }
+
+  function startRecording() {
+    if (loading || isRecording) return;
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert(
+        "Dein Browser unterstützt keine Spracheingabe. Bitte nutze Chrome."
+      );
+      return;
+    }
+
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.abort();
+      } catch {
+        /* ignore */
+      }
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "de-DE";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsRecording(true);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0]?.[0]?.transcript;
+      if (transcript) {
+        setInput(transcript);
+        requestAnimationFrame(() => {
+          inputRef.current?.focus();
+        });
+      }
+      setIsRecording(false);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Spracheingabe Fehler:", event.error);
+      setIsRecording(false);
+      if (event.error === "not-allowed") {
+        alert(
+          "Bitte erlaube den Mikrofonzugriff in deinen Browser-Einstellungen."
+        );
+      } else if (event.error === "no-speech") {
+        alert("Keine Sprache erkannt. Bitte versuche es erneut.");
+      } else if (event.error === "network") {
+        alert(
+          "Spracheingabe benötigt eine Netzwerkverbindung. Bitte nutze Chrome oder prüfe deine Verbindung."
+        );
+      } else if (event.error !== "aborted") {
+        alert(
+          "Spracheingabe fehlgeschlagen. Bitte nutze Chrome und erlaube den Mikrofonzugriff."
+        );
+      }
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+      recognitionRef.current = null;
+    };
+
+    recognitionRef.current = recognition;
+
+    try {
+      recognition.start();
+    } catch (err) {
+      console.error("Spracheingabe start:", err);
+      setIsRecording(false);
+      recognitionRef.current = null;
+      alert(
+        "Spracheingabe konnte nicht gestartet werden. Bitte nutze Chrome."
+      );
     }
   }
 
@@ -108,6 +228,7 @@ export default function ChatInterface() {
         className="flex gap-2 border-t border-border p-4"
       >
         <input
+          ref={inputRef}
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -115,6 +236,38 @@ export default function ChatInterface() {
           disabled={loading}
           className="input-field flex-1"
         />
+        <button
+          type="button"
+          onClick={startRecording}
+          disabled={loading || isRecording || !supportsSpeech}
+          title={
+            !supportsSpeech
+              ? "Spracheingabe wird in diesem Browser nicht unterstützt. Bitte Chrome nutzen."
+              : isRecording
+                ? "Aufnahme läuft …"
+                : "Spracheingabe (Mikrofon)"
+          }
+          aria-label={
+            !supportsSpeech
+              ? "Spracheingabe nicht verfügbar"
+              : isRecording
+                ? "Spracheingabe aktiv"
+                : "Spracheingabe starten"
+          }
+          className={`flex shrink-0 items-center justify-center rounded-md px-4 transition-all ${
+            !supportsSpeech
+              ? "cursor-not-allowed border border-border bg-surface opacity-40"
+              : isRecording
+                ? "border border-accent bg-accent/20 text-accent animate-pulse shadow-[0_0_12px_rgba(230,50,40,0.45)]"
+                : "border border-border bg-surface text-white hover:border-accent/50 hover:text-white"
+          }`}
+        >
+          <Mic
+            size={18}
+            strokeWidth={2.5}
+            className={isRecording ? "text-accent" : undefined}
+          />
+        </button>
         <button
           type="submit"
           disabled={loading || !input.trim()}
