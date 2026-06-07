@@ -228,6 +228,7 @@ export default function ChatInterface({ initialPrompt = null }) {
         className="flex gap-2 border-t border-border p-4"
       >
         <input
+          data-tutorial="chat-input"
           ref={inputRef}
           type="text"
           value={input}

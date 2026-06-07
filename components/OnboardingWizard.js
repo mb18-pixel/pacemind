@@ -12,7 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 9;
 
 const WOCHENTAGE = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
@@ -75,6 +75,8 @@ const initialForm = {
   fitnesslevel: "",
   ziel: "",
   zielDatum: "",
+  zielPace: "",
+  zielDistanz: "",
   slots: Array.from({ length: 7 }, (_, i) => ({
     wochentag: i,
     verfuegbar: false,
@@ -174,7 +176,18 @@ export default function OnboardingWizard() {
       case 5:
         if (!form.zielDatum) return "Bitte wähle dein Zieldatum.";
         return null;
-      case 6: {
+      case 6:
+        if (form.zielPace) {
+          const paceRegex = /^\d+:[0-5]\d$/;
+          if (!paceRegex.test(form.zielPace)) {
+            return "Bitte gib die Zielpace im Format MM:SS ein (z. B. 5:30).";
+          }
+          if (!form.zielDistanz) {
+            return "Bitte wähle eine Distanz für deine Zielpace.";
+          }
+        }
+        return null;
+      case 7: {
         const activeSlots = form.slots.filter((s) => s.verfuegbar);
         if (activeSlots.length < 2) {
           return "Bitte wähle mindestens 2 Trainingstage";
@@ -236,6 +249,8 @@ export default function OnboardingWizard() {
           fitnesslevel: form.fitnesslevel,
           ziel: form.ziel,
           zielDatum: form.zielDatum,
+          zielPace: form.zielPace || null,
+          zielDistanz: form.zielDistanz || null,
           trainingstage: trainingstageValue,
           slots: availableSlots,
         }),
@@ -512,7 +527,57 @@ export default function OnboardingWizard() {
           </div>
         );
 
-      case 6: {
+      case 6:
+        return (
+          <div className="space-y-5">
+            <div className="flex items-center gap-3">
+              <Target className="text-accent" size={22} />
+              <h2 className="text-xl font-extrabold uppercase tracking-tight text-text">
+                Zielpace (optional)
+              </h2>
+            </div>
+            <p className="text-sm leading-relaxed text-text-muted">
+              Hast du eine konkrete Pace-Vorgabe für deine Zieldistanz? (z. B. 5:30 min/km)
+            </p>
+            
+            <label className="block">
+              <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-text-muted">
+                Zielpace (Format MM:SS, z. B. 5:30)
+              </span>
+              <input
+                type="text"
+                placeholder="5:30"
+                value={form.zielPace}
+                onChange={(e) => updateForm({ zielPace: e.target.value })}
+                className="input-field"
+              />
+            </label>
+
+            <div>
+              <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-text-muted">
+                Dafür gewählte Distanz
+              </span>
+              <div className="grid gap-2 grid-cols-2 sm:grid-cols-4">
+                {["5K", "10K", "Halbmarathon", "Marathon"].map((dist) => (
+                  <button
+                    key={dist}
+                    type="button"
+                    onClick={() => updateForm({ zielDistanz: dist })}
+                    className={`rounded-md border px-4 py-3 text-sm font-bold uppercase tracking-wide transition-all ${
+                      form.zielDistanz === dist
+                        ? "border-accent bg-accent/15 text-text shadow-[0_0_16px_rgba(230,50,40,0.25)]"
+                        : "border-border bg-surface text-text-muted hover:border-accent/50"
+                    }`}
+                  >
+                    {dist}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 7: {
         const selectedCount = form.slots.filter((s) => s.verfuegbar).length;
         return (
           <div className="space-y-5">
@@ -623,7 +688,7 @@ export default function OnboardingWizard() {
         );
       }
 
-      case 7:
+      case 8:
         return (
           <div className="flex flex-col items-center py-8 text-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-md bg-accent/15 shadow-[0_0_40px_rgba(230,50,40,0.3)]">
@@ -641,7 +706,7 @@ export default function OnboardingWizard() {
           </div>
         );
 
-      case 8:
+      case 9:
         return (
           <div className="flex flex-col items-center py-8 text-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-md bg-accent/15 shadow-[0_0_40px_rgba(230,50,40,0.3)]">

@@ -121,13 +121,10 @@ export async function POST(request) {
       temperature: 0.35,
     });
 
-    const reply = completion.choices[0]?.message?.content;
-    if (!reply) {
-      return Response.json(
-        { error: "Keine Antwort von der KI erhalten" },
-        { status: 500 }
-      );
-    }
+    const result = completion;
+    const reply = result.choices[0]?.message?.content || 
+                  result.content?.[0]?.text || 
+                  "Keine Antwort";
 
     let textReply = reply;
     let actionResult = null;
@@ -153,6 +150,8 @@ export async function POST(request) {
       reply: textReply,
       action: actionResult,
       planUpdated,
+    }, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
     });
   } catch (error) {
     console.error("Chat API error:", error);

@@ -35,6 +35,8 @@ export async function POST(request) {
       fitnesslevel,
       ziel,
       zielDatum,
+      zielPace,
+      zielDistanz,
       trainingstage,
       slots,
     } = body;
@@ -90,6 +92,8 @@ export async function POST(request) {
         fitnesslevel,
         ziel,
         ziel_datum: zielDatum || null,
+        zielpace: zielPace || null,
+        zieldistanz: zielDistanz || null,
         trainingstage: String(trainingstageCount),
         onboarding_abgeschlossen: true,
       })

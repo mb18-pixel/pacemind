@@ -2,7 +2,15 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Calendar, Clock, MessageSquare, Plus, RefreshCw } from "lucide-react";
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  MessageSquare,
+  Plus,
+  RefreshCw,
+} from "lucide-react";
 import { PLAN_UPDATED_EVENT } from "@/components/ChatInterface";
 import { weatherEmoji } from "@/lib/weather";
 
@@ -29,7 +37,8 @@ export default function CalendarView() {
   const [loading, setLoading] = useState(true);
   const [savingSlots, setSavingSlots] = useState(false);
   const [generatingPlan, setGeneratingPlan] = useState(false);
-  const [selectedWeek, setSelectedWeek] = useState(getCurrentWeek());
+  const [activeTab, setActiveTab] = useState("this"); // this | next
+  const [weekOffset, setWeekOffset] = useState(0); // 0 = diese Woche (Mo), 1 = nächste Woche (Mo)
   const [spontaneousOpen, setSpontaneousOpen] = useState(false);
   const [spontaneousSaving, setSpontaneousSaving] = useState(false);
   const [spontaneousDraft, setSpontaneousDraft] = useState({
@@ -41,20 +50,52 @@ export default function CalendarView() {
     dauer_minuten: "",
   });
 
-  function getCurrentWeek() {
+  function getCurrentWeekStart() {
     const now = new Date();
     const start = new Date(now);
     start.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+    start.setHours(0, 0, 0, 0);
     return start;
   }
+
+  function getWeekStartByOffset(offset) {
+    const base = getCurrentWeekStart();
+    const d = new Date(base);
+    d.setDate(d.getDate() + offset * 7);
+    return d;
+  }
+
+  function formatISO(date) {
+    return date.toISOString().split("T")[0];
+  }
+
+  function getISOWeekNumber(date) {
+    // ISO week date weeks start on Monday
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+  }
+
+  const selectedWeekStart = getWeekStartByOffset(weekOffset);
+  const selectedWeekStartIso = formatISO(selectedWeekStart);
+
+  useEffect(() => {
+    // Tabs sind eine einfache Abkürzung: 0 => diese Woche, >=1 => nächste Woche
+    Promise.resolve().then(() => {
+      setActiveTab(weekOffset >= 1 ? "next" : "this");
+    });
+  }, [weekOffset]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [planRes, slotsRes, weatherRes] = await Promise.all([
-        fetch("/api/training-plan?days=14"),
+        fetch(`/api/training-plan?start=${selectedWeekStartIso}&days=7`),
         fetch("/api/training-slots"),
-        fetch("/api/weather?days=14"),
+        // Open-Meteo liefert i.d.R. max. 16 Tage – reicht für „Nächste Woche“
+        fetch("/api/weather?days=16"),
       ]);
 
       const planData = await planRes.json();
@@ -76,14 +117,14 @@ export default function CalendarView() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedWeekStartIso]);
 
   useEffect(() => {
     const t = setTimeout(() => {
       loadData();
     }, 0);
     return () => clearTimeout(t);
-  }, [selectedWeek, loadData]);
+  }, [weekOffset, loadData]);
 
   useEffect(() => {
     function onPlanUpdated() {
@@ -91,6 +132,13 @@ export default function CalendarView() {
     }
     window.addEventListener(PLAN_UPDATED_EVENT, onPlanUpdated);
     return () => window.removeEventListener(PLAN_UPDATED_EVENT, onPlanUpdated);
+  }, [loadData]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadData();
+    }, 30000);
+    return () => clearInterval(interval);
   }, [loadData]);
 
   async function saveSlots() {
@@ -147,11 +195,35 @@ export default function CalendarView() {
     }
   }
 
+  async function generatePlanForSelectedWeek() {
+    setGeneratingPlan(true);
+    try {
+      const res = await fetch("/api/training-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          generate: true,
+          days: 7,
+          start: selectedWeekStartIso,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Generierung fehlgeschlagen");
+      await loadData();
+      window.dispatchEvent(new CustomEvent(PLAN_UPDATED_EVENT));
+    } catch (error) {
+      console.error("Error generating selected week plan:", error);
+      alert(error.message);
+    } finally {
+      setGeneratingPlan(false);
+    }
+  }
+
   function getWeekDays() {
     const days = [];
     for (let i = 0; i < 7; i++) {
-      const date = new Date(selectedWeek);
-      date.setDate(selectedWeek.getDate() + i);
+      const date = new Date(selectedWeekStart);
+      date.setDate(selectedWeekStart.getDate() + i);
       days.push(date);
     }
     return days;
@@ -289,6 +361,16 @@ export default function CalendarView() {
   const coachContext = encodeURIComponent(
     "Lass uns meinen Trainingsplan besprechen"
   );
+  const isoWeek = getISOWeekNumber(selectedWeekStart);
+  const hasAnyPlanInWeek = weekDays.some((d) => Boolean(getPlanForDate(d)));
+  const showNextWeekEmptyState = activeTab === "next" && !hasAnyPlanInWeek;
+
+  const weekLabel = (() => {
+    if (weekOffset === 0) return `KW ${isoWeek} – Diese Woche`;
+    if (weekOffset === 1) return `KW ${isoWeek} – Nächste Woche`;
+    if (weekOffset < 0) return `KW ${isoWeek} – ${Math.abs(weekOffset)} Woche(n) zurück`;
+    return `KW ${isoWeek} – ${weekOffset} Wochen voraus`;
+  })();
 
   return (
     <div className="space-y-8">
@@ -395,6 +477,88 @@ export default function CalendarView() {
           </div>
         </div>
       )}
+
+      {/* Tabs + Wochennavigation */}
+      <div className="rounded-md border border-border bg-surface">
+        <div className="flex items-center justify-between gap-3 border-b border-border px-4">
+          <div className="flex gap-6">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab("this");
+                setWeekOffset(0);
+              }}
+              className={`py-3 text-xs font-extrabold uppercase tracking-widest transition ${
+                activeTab === "this"
+                  ? "text-text border-b-2 border-accent"
+                  : "text-text-muted hover:text-text"
+              }`}
+            >
+              Diese Woche
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab("next");
+                setWeekOffset(1);
+              }}
+              className={`py-3 text-xs font-extrabold uppercase tracking-widest transition ${
+                activeTab === "next"
+                  ? "text-text border-b-2 border-accent"
+                  : "text-text-muted hover:text-text"
+              }`}
+            >
+              Nächste Woche
+            </button>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-2 py-2">
+            <button
+              type="button"
+              onClick={() => setWeekOffset((o) => o - 1)}
+              className="rounded-md border border-border bg-bg p-2 text-text-muted hover:text-text"
+              title="Vorherige Woche"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <span className="min-w-[200px] text-center text-xs font-bold uppercase tracking-wider text-text-muted">
+              {weekLabel}
+            </span>
+            <button
+              type="button"
+              onClick={() => setWeekOffset((o) => o + 1)}
+              className="rounded-md border border-border bg-bg p-2 text-text-muted hover:text-text"
+              title="Nächste Woche"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile label */}
+        <div className="flex items-center justify-between gap-2 px-4 py-3 sm:hidden">
+          <button
+            type="button"
+            onClick={() => setWeekOffset((o) => o - 1)}
+            className="rounded-md border border-border bg-bg p-2 text-text-muted hover:text-text"
+            title="Vorherige Woche"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <span className="text-xs font-bold uppercase tracking-wider text-text-muted">
+            {weekLabel}
+          </span>
+          <button
+            type="button"
+            onClick={() => setWeekOffset((o) => o + 1)}
+            className="rounded-md border border-border bg-bg p-2 text-text-muted hover:text-text"
+            title="Nächste Woche"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
+
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Link
           href={`/chat?context=${coachContext}`}
@@ -412,7 +576,7 @@ export default function CalendarView() {
             size={16}
             className={generatingPlan ? "animate-spin" : ""}
           />
-          Plan neu generieren
+          Plan aktualisieren
         </button>
       </div>
 
@@ -423,6 +587,31 @@ export default function CalendarView() {
             Wochenplan
           </h2>
         </div>
+
+        {showNextWeekEmptyState ? (
+          <div className="rounded-md border border-border bg-surface-elevated p-4">
+            <p className="text-sm font-semibold text-text">
+              Für nächste Woche sind noch keine Einheiten geplant.
+            </p>
+            <p className="mt-1 text-sm text-text-muted">
+              Erstelle jetzt automatisch deinen Plan für die kommende Woche.
+            </p>
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                onClick={generatePlanForSelectedWeek}
+                disabled={generatingPlan}
+                className="btn-primary flex items-center gap-2"
+              >
+                <RefreshCw
+                  size={16}
+                  className={generatingPlan ? "animate-spin" : ""}
+                />
+                Nächste Woche planen
+              </button>
+            </div>
+          </div>
+        ) : null}
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
           {weekDays.map((date, index) => {
@@ -496,22 +685,47 @@ export default function CalendarView() {
                       {planEntry.ist_spontan ? "⚡ " : ""}
                       {planEntry.trainingstyp}
                     </p>
+                    {planEntry.distanz_km && planEntry.dauer_minuten ? (
+                      <p className="text-xs text-text-muted">
+                        📏 {planEntry.distanz_km} km · ⏱ {planEntry.dauer_minuten} Min
+                      </p>
+                    ) : null}
+                    {planEntry.beschreibung ? (
+                      (() => {
+                        const lines = planEntry.beschreibung.split('\n');
+                        const hfLine = lines.find(l => l.includes('HF') || l.includes('bpm'));
+                        const hauptteilLine = lines.find(l => l.toLowerCase().includes('hauptteil'));
+                        
+                        // Extrahiere Hauptteil für eine Zeile
+                        let hauptteil = "";
+                        if (hauptteilLine) {
+                          hauptteil = hauptteilLine.replace('Hauptteil:', '').trim();
+                          // Entferne HF-Zone aus Hauptteil für Kürze
+                          hauptteil = hauptteil.split('|')[0].trim();
+                        }
+                        
+                        return (
+                          <div className="space-y-0.5">
+                            {hfLine && (
+                              <p className="text-xs text-text-muted">
+                                💓 {hfLine.replace('HF-Zone:', '').replace('HF:', '').trim()}
+                              </p>
+                            )}
+                            {hauptteil && (
+                              <p className="text-xs text-text-muted truncate">
+                                {hauptteil}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })()
+                    ) : null}
                     {planEntry.uhrzeit_start ? (
                       <p className="text-xs text-text-muted">
-                        {String(planEntry.uhrzeit_start).slice(0, 5)}
+                        ⏰ {String(planEntry.uhrzeit_start).slice(0, 5)}
                         {planEntry.uhrzeit_ende
                           ? `–${String(planEntry.uhrzeit_ende).slice(0, 5)}`
                           : ""}
-                      </p>
-                    ) : null}
-                    {planEntry.dauer_minuten ? (
-                      <p className="text-xs text-text-muted">
-                        {planEntry.dauer_minuten} min
-                      </p>
-                    ) : null}
-                    {planEntry.distanz_km ? (
-                      <p className="text-xs text-text-muted">
-                        {planEntry.distanz_km} km
                       </p>
                     ) : null}
                   </div>
@@ -522,6 +736,40 @@ export default function CalendarView() {
             );
           })}
         </div>
+
+        {activeTab === "next" ? (
+          <div className="rounded-md border border-border bg-surface p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs font-extrabold uppercase tracking-widest text-text-muted">
+                Wetter-Vorschau (7 Tage)
+              </p>
+              <p className="text-xs text-text-muted">Open-Meteo</p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-7">
+              {weekDays.map((date, idx) => {
+                const dateStr = formatISO(date);
+                const w = weatherByDate[dateStr];
+                return (
+                  <div
+                    key={idx}
+                    className="rounded-md border border-border bg-bg px-3 py-2"
+                  >
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
+                      {WOCHENTAGE[idx]}
+                    </p>
+                    {w ? (
+                      <p className="mt-1 text-sm font-semibold text-text">
+                        {weatherEmoji(w.weathercode)} {Math.round(w.tempMin)}–{Math.round(w.tempMax)}°
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-xs text-text-muted">—</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="space-y-4">

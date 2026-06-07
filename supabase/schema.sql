@@ -7,6 +7,7 @@ create table if not exists public.profiles (
   privacy_accepted_at timestamptz,
   age_confirmed_at timestamptz,
   onboarding_abgeschlossen boolean default false,
+  tutorial_abgeschlossen boolean default false,
   vorname text,
   geschlecht text,
   alter_jahre integer,
@@ -18,6 +19,8 @@ create table if not exists public.profiles (
   longitude numeric(9, 6),
   fitnesslevel text,
   ziel text,
+  zielpace text,
+  zieldistanz text,
   trainingstage text,
   created_at timestamptz default now()
 );
@@ -80,6 +83,29 @@ create policy "Users insert own runs"
   on public.runs for insert
   with check (auth.uid() = user_id);
 
-create policy "Users delete own runs"
-  on public.runs for delete
+  using (auth.uid() = user_id);
+
+-- Wöchentliche Fortschritts-Recaps
+create table if not exists public.weekly_recaps (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  woche_start date not null,
+  gelaufene_km numeric(6, 2) not null default 0.00,
+  geplante_km numeric(6, 2) not null default 0.00,
+  anzahl_läufe integer not null default 0,
+  durchschnittspace text not null default '-',
+  streak_wochen integer not null default 0,
+  coach_kommentar text,
+  created_at timestamp with time zone default now()
+);
+
+-- Index für schnelleren Zugriff auf Recaps pro User geordnet nach Datum
+create index if not exists weekly_recaps_user_id_woche_start_idx
+  on public.weekly_recaps (user_id, woche_start desc);
+
+-- Row Level Security für weekly_recaps
+alter table public.weekly_recaps enable row level security;
+
+create policy "Users read own weekly recaps"
+  on public.weekly_recaps for select
   using (auth.uid() = user_id);

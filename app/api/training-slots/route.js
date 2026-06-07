@@ -16,7 +16,10 @@ const WOCHENTAG_VOLL = [
 function jsonResponse(body, status = 200) {
   return NextResponse.json(body, {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+    },
   });
 }
 

@@ -14,7 +14,9 @@ export async function GET() {
     }
 
     const runs = await getRunsForUser(supabase, user.id);
-    return Response.json({ runs });
+    return Response.json({ runs }, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+    });
   } catch (error) {
     console.error("Runs GET error:", error);
     return Response.json(
@@ -55,7 +57,9 @@ export async function POST(request) {
       notizen: notes || "",
     });
 
-    return Response.json({ run });
+    return Response.json({ run }, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+    });
   } catch (error) {
     console.error("Runs POST error:", error);
     return Response.json(

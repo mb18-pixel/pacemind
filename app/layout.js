@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import InstallBanner from "@/components/InstallBanner";
+import MainLayout from "@/components/MainLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,9 +40,9 @@ export default function RootLayout({ children }) {
       </head>
       <body className="flex min-h-full flex-col bg-bg font-sans text-text">
         <Navbar />
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+        <MainLayout>
           {children}
-        </main>
+        </MainLayout>
         <InstallBanner />
         <Footer />
 

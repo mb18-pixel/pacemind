@@ -4,6 +4,8 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import ChatInterface from "@/components/ChatInterface";
 import PushPermissionCard from "@/components/PushPermissionCard";
+import WeeklyRecapCard from "@/components/WeeklyRecapCard";
+import ChatTutorialGate from "@/components/ChatTutorialGate";
 import { MessageSquare } from "lucide-react";
 
 function ChatContent() {
@@ -12,6 +14,7 @@ function ChatContent() {
 
   return (
     <div className="space-y-6">
+      <ChatTutorialGate />
       <div className="animate-fade-up">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-md bg-accent/15">
@@ -27,6 +30,7 @@ function ChatContent() {
           </div>
         </div>
       </div>
+      <WeeklyRecapCard />
       <PushPermissionCard />
       <ChatInterface initialPrompt={context} />
     </div>

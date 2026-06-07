@@ -12,17 +12,22 @@
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.1",
     "groq-sdk": "^1.2.0",
-    "lucide-react": "^1.16.0",
-    "next": "16.2.6",
+    "lightningcss": "1.28.2",
+    "lucide-react": "^1.17.0",
+    "next": "^15.3.2",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "recharts": "^3.8.1",
     "web-push": "^3.6.7"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "^4.3.0",
     "eslint": "^9",
-    "eslint-config-next": "16.2.6",
+    "eslint-config-next": "^15.3.2",
     "tailwindcss": "^4"
+  },
+  "optionalDependencies": {
+    "lightningcss-linux-arm64-gnu": "1.28.2",
+    "lightningcss-linux-arm64-musl": "1.28.2"
   }
 }
