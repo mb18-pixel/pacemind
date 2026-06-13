@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
-  Calendar,
   MessageSquare,
   Cloud,
   ChevronDown,
@@ -168,6 +167,19 @@ function StepCard({ number, title, text, delay = 0 }) {
 
 // ─── Main Landing Page ───────────────────────────────────────────────────────
 export default function LandingPage() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const updateViewport = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+
+    return () => window.removeEventListener("resize", updateViewport);
+  }, []);
+
   const scrollDown = () => {
     document.getElementById("stats-section")?.scrollIntoView({ behavior: "smooth" });
   };
@@ -203,8 +215,47 @@ export default function LandingPage() {
       ══════════════════════════════════════════════════ */}
       <section className="relative flex min-h-screen flex-col overflow-hidden">
 
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: isMobile
+              ? "linear-gradient(135deg, #0a0a0a 0%, #1a0505 50%, #0a0a0a 100%)"
+              : "url('/images/running-poster.jpg')",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            backgroundSize: "cover",
+          }}
+        />
+
+        {!isMobile && (
+          <video
+            poster="/images/running-poster.jpg"
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 h-full w-full"
+            style={{
+              objectFit: "cover",
+              zIndex: 0,
+              opacity: 0.4,
+            }}
+          >
+            <source src="/videos/running.mp4" type="video/mp4" />
+          </video>
+        )}
+
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, rgba(10,10,10,0.7) 0%, rgba(10,10,10,0.5) 50%, rgba(10,10,10,0.9) 100%)",
+            zIndex: 1,
+          }}
+        />
+
         {/* Animated red glowing background */}
-        <div className="pointer-events-none absolute inset-0 select-none">
+        <div className="pointer-events-none absolute inset-0 z-[1] select-none">
           {/* Main center glow */}
           <div className="glow-blob absolute bottom-[-10%] right-[-5%] h-[620px] w-[620px] rounded-full bg-[#e63228] blur-[160px]" />
           {/* Secondary top-left ambient */}
@@ -286,7 +337,7 @@ export default function LandingPage() {
           </div>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             <FeatureCard
-              icon={Calendar}
+              icon={Activity}
               title="Dein Plan. Dein Tempo."
               text="Der Coach erstellt dir einen wissenschaftlich fundierten Trainingsplan – angepasst an dein Ziel, deine Zeit und dein Fitnesslevel."
               delay={0}
@@ -300,7 +351,7 @@ export default function LandingPage() {
             <FeatureCard
               icon={Cloud}
               title="Training bei jedem Wetter."
-              text="PaceMind kennt das Wetter an deinem Standort und plant deine Einheiten entsprechend."
+              text="Ascend kennt das Wetter an deinem Standort und plant deine Einheiten entsprechend."
               delay={260}
             />
           </div>

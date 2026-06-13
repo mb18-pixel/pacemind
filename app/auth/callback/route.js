@@ -4,7 +4,16 @@ import { NextResponse } from "next/server";
 export async function GET(request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/chat";
+  const nextParam = searchParams.get("next") ?? "/chat";
+
+  // Validierung: nur relative Pfade erlauben
+  const isValidPath = (path) => {
+    return path.startsWith("/") && 
+           !path.startsWith("//") && 
+           !path.includes("://");
+  };
+
+  const next = isValidPath(nextParam) ? nextParam : "/chat";
 
   if (code) {
     const supabase = await createClient();

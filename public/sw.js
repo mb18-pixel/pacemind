@@ -1,11 +1,11 @@
-/* PaceMind Service Worker (PWA)
+/* Ascend Service Worker (PWA)
  * - Precache wichtiger Seiten
  * - Offline-Fallback
  * - Push Notifications + Click Handling
  */
 
 const CACHE_NAME = "pacemind-v1";
-const PRECACHE_URLS = ["/", "/chat", "/kalender", "/laeufe", "/offline"];
+const PRECACHE_URLS = ["/", "/chat", "/laeufe", "/offline"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -88,7 +88,7 @@ self.addEventListener("fetch", (event) => {
 self.addEventListener("push", (event) => {
   const data = event.data?.json?.() ?? {};
   event.waitUntil(
-    self.registration.showNotification(data.title || "PaceMind", {
+    self.registration.showNotification(data.title || "Ascend", {
       body: data.body || "Dein Coach hat eine Nachricht.",
       icon: "/icons/icon-192.png",
       badge: "/icons/icon-192.png",

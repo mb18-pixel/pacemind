@@ -1,7 +1,7 @@
 import { Shield } from "lucide-react";
 
 export const metadata = {
-  title: "Datenschutz – PaceMind",
+  title: "Datenschutz – Ascend",
 };
 
 export default function DatenschutzPage() {

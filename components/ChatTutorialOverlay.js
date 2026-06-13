@@ -28,7 +28,6 @@ export default function ChatTutorialOverlay({
   steps,
   onSkip,
   onNext,
-  onInstall,
   onLater,
 }) {
   const total = steps.length;
@@ -151,6 +150,29 @@ export default function ChatTutorialOverlay({
             {step?.text}
           </p>
 
+          {/* Example message chips for chat step */}
+          {step?.chips && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {step.chips.map((chip, idx) => (
+                <span
+                  key={idx}
+                  className="rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-700"
+                >
+                  {chip}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Final step: Logo and big button */}
+          {step?.isFinal && (
+            <div className="mt-6 flex flex-col items-center">
+              <div className="mb-4 text-4xl font-black tracking-tight text-[#e63228]">
+                ASCEND
+              </div>
+            </div>
+          )}
+
           <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
             {isLast ? (
               <>
@@ -163,10 +185,10 @@ export default function ChatTutorialOverlay({
                 </button>
                 <button
                   type="button"
-                  onClick={onInstall}
+                  onClick={onLater}
                   className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
                 >
-                  App installieren
+                  Training starten
                 </button>
               </>
             ) : (

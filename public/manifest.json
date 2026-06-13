@@ -1,6 +1,6 @@
 {
-  "name": "PaceMind – KI-Laufcoach",
-  "short_name": "PaceMind",
+  "name": "Ascend – KI-Laufcoach",
+  "short_name": "Ascend",
   "description": "Dein persönlicher KI-Laufcoach by PerformanceProtokoll",
   "start_url": "/chat",
   "display": "standalone",

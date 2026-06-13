@@ -22,6 +22,9 @@ create table if not exists public.profiles (
   zielpace text,
   zieldistanz text,
   trainingstage text,
+  nachrichten_heute integer default 0,
+  nachrichten_reset_datum date default current_date,
+  nachrichten_limit integer default 20,
   created_at timestamptz default now()
 );
 
@@ -40,6 +43,15 @@ create table if not exists public.runs (
 
 create index if not exists runs_user_id_created_at_idx
   on public.runs (user_id, created_at desc);
+
+-- Feedback
+create table if not exists public.feedback (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete set null,
+  nachricht text not null,
+  seite text,
+  created_at timestamp with time zone default now()
+);
 
 -- Profil bei Registrierung anlegen
 create or replace function public.handle_new_user()
@@ -62,6 +74,7 @@ create trigger on_auth_user_created
 -- Row Level Security
 alter table public.profiles enable row level security;
 alter table public.runs enable row level security;
+alter table public.feedback enable row level security;
 
 create policy "Users read own profile"
   on public.profiles for select
@@ -82,6 +95,10 @@ create policy "Users read own runs"
 create policy "Users insert own runs"
   on public.runs for insert
   with check (auth.uid() = user_id);
+
+create policy "Nutzer können Feedback senden"
+  on public.feedback for insert
+  with check (true);
 
   using (auth.uid() = user_id);
 

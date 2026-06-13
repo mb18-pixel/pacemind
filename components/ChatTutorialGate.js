@@ -9,21 +9,27 @@ const STEPS = [
     key: "chat",
     target: '[data-tutorial="chat-input"]',
     text: `Hier sprichst du mit deinem Coach.\nFrag ihn alles – er kennt deinen Plan,\ndeine Läufe und das Wetter.`,
-  },
-  {
-    key: "kalender",
-    target: '[data-tutorial="nav-kalender"]',
-    text: `Hier siehst du deinen Trainingsplan.\nDer Coach passt ihn automatisch an\nwenn du ihm Bescheid gibst.`,
+    chips: [
+      "Wie ist mein Plan?",
+      "Ich bin müde",
+      "Verlege Mittwoch"
+    ]
   },
   {
     key: "laeufe",
     target: '[data-tutorial="nav-laeufe"]',
-    text: `Nach jedem Lauf trägst du hier\ndeine Daten ein – oder sagst es einfach\ndem Coach im Chat.`,
+    text: `Nach jedem Training hier eintragen –\noder einfach dem Coach sagen:\n'Ich habe heute 8km in 5:30 gelaufen'`,
   },
   {
-    key: "pwa",
+    key: "zeiten",
+    target: '[data-tutorial="trainingszeiten"]',
+    text: `Hier siehst und änderst du wann du trainierst.\nDer Plan passt sich automatisch an.`,
+  },
+  {
+    key: "fertig",
     target: null,
-    text: `Installiere PaceMind auf deinem\nHomescreen für schnellen Zugriff und\nTrainings-Erinnerungen.`,
+    text: `Du bist bereit. Dein Coach wartet.`,
+    isFinal: true,
   },
 ];
 
@@ -104,12 +110,6 @@ export default function ChatTutorialGate() {
     setStepIndex((i) => Math.min(i + 1, steps.length - 1));
   }, [steps.length]);
 
-  const onInstall = useCallback(() => {
-    // Navbar öffnet dann das bestehende Install/Push-Modal
-    window.dispatchEvent(new CustomEvent("pacemind-open-install-modal"));
-    finish();
-  }, [finish]);
-
   const onLater = useCallback(() => {
     finish();
   }, [finish]);
@@ -123,7 +123,6 @@ export default function ChatTutorialGate() {
       steps={steps}
       onSkip={onSkip}
       onNext={onNext}
-      onInstall={onInstall}
       onLater={onLater}
     />
   );

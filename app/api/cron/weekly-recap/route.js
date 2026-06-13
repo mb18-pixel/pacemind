@@ -16,9 +16,8 @@ function requireCron(request) {
 function getPastWeekRange(today = new Date()) {
   const d = new Date(today);
   d.setHours(0, 0, 0, 0);
-  const jsDay = d.getDay(); // 0=So, 1=Mo, ..., 6=Sa
-  // Wir wollen den Bereich von Montag dieser Woche bis Sonntag (heute)
-  const daysSinceMon = jsDay === 0 ? 6 : jsDay - 1;
+  // JS: 0=So ... 6=Sa → 0=Mo ... 6=So
+  const daysSinceMon = (d.getDay() + 6) % 7;
 
   const start = new Date(d);
   start.setDate(d.getDate() - daysSinceMon);

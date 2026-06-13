@@ -1,7 +1,7 @@
 import { FileText } from "lucide-react";
 
 export const metadata = {
-  title: "Impressum – PaceMind",
+  title: "Impressum – Ascend",
 };
 
 export default function ImpressumPage() {

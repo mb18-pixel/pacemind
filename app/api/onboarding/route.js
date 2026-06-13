@@ -26,7 +26,6 @@ export async function POST(request) {
       vorname,
       geschlecht,
       alterJahre,
-      gewichtKg,
       koerperfettanteil,
       stadt,
       land,
@@ -37,6 +36,10 @@ export async function POST(request) {
       zielDatum,
       zielPace,
       zielDistanz,
+      zielzeit,
+      aktuelleTrainingsfrequenz,
+      aktuelleDistanz,
+      zielzeitBerechnet,
       trainingstage,
       slots,
     } = body;
@@ -49,9 +52,6 @@ export async function POST(request) {
     }
     if (!alterJahre) {
       return jsonResponse({ error: "Alter fehlt" }, 400);
-    }
-    if (!gewichtKg) {
-      return jsonResponse({ error: "Gewicht fehlt" }, 400);
     }
     if (!stadt || latitude == null || longitude == null) {
       return jsonResponse({ error: "Standort unvollständig" }, 400);
@@ -81,7 +81,6 @@ export async function POST(request) {
         vorname: vorname.trim(),
         geschlecht,
         alter_jahre: Number(alterJahre),
-        gewicht_kg: Number(gewichtKg),
         koerperfettanteil: koerperfettanteil
           ? Number(koerperfettanteil)
           : null,
@@ -94,6 +93,10 @@ export async function POST(request) {
         ziel_datum: zielDatum || null,
         zielpace: zielPace || null,
         zieldistanz: zielDistanz || null,
+        zielzeit: zielzeit || null,
+        aktuelle_trainingsfrequenz: aktuelleTrainingsfrequenz || null,
+        aktuelle_distanz: aktuelleDistanz || null,
+        zielzeit_berechnet: zielzeitBerechnet || false,
         trainingstage: String(trainingstageCount),
         onboarding_abgeschlossen: true,
       })

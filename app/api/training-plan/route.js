@@ -20,6 +20,15 @@ function jsonResponse(body, status = 200) {
   });
 }
 
+function slotMinuten(start, ende) {
+  // Offenes Zeitfenster (ohne Start/Ende) → keine harte Begrenzung
+  if (!start || !ende) return null;
+  const [sh, sm] = String(start).split(":").map(Number);
+  const [eh, em] = String(ende).split(":").map(Number);
+  if (![sh, sm, eh, em].every((n) => Number.isFinite(n))) return null;
+  return eh * 60 + em - (sh * 60 + sm);
+}
+
 function getSimulatedToday(request) {
   if (process.env.NODE_ENV !== "development") return null;
   const iso = request.headers.get("x-simulated-date");
@@ -110,7 +119,12 @@ export async function POST(request) {
         getTrainingSlots(supabase, user.id),
       ]);
 
-      const availableSlots = (slots || []).filter((s) => s.verfuegbar);
+      const availableSlots = (slots || []).filter((s) => {
+        if (!s.verfuegbar) return false;
+        const mins = slotMinuten(s.uhrzeit_start, s.uhrzeit_ende);
+        // Minimum: 20 Minuten (kürzere Slots ignorieren)
+        return mins == null ? true : mins >= 20;
+      });
       if (availableSlots.length === 0) {
         return jsonResponse(
           { error: "Keine Trainingszeitslots – bitte zuerst Zeiten hinterlegen" },
@@ -320,22 +334,41 @@ export async function PATCH(request) {
       return jsonResponse({ error: "Plan-ID oder Datum fehlt" }, 400);
     }
 
-    let query = supabase.from("training_plan").update(updates).eq("user_id", user.id);
+    // Build the update query
+    let updateQuery = supabase.from("training_plan").update(updates).eq("user_id", user.id);
 
     if (id) {
-      query = query.eq("id", id);
+      updateQuery = updateQuery.eq("id", id);
     } else {
-      query = query.eq("datum", datum);
+      updateQuery = updateQuery.eq("datum", datum);
     }
 
-    const { data, error } = await query.select().single();
+    // Execute the update
+    const { error: updateError } = await updateQuery;
 
-    if (error) {
-      console.error("Training plan update error:", error);
+    if (updateError) {
+      console.error("Training plan update error:", updateError);
       return jsonResponse(
-        { error: error.message || "Trainingsplan konnte nicht aktualisiert werden" },
+        { error: updateError.message || "Trainingsplan konnte nicht aktualisiert werden" },
         500
       );
+    }
+
+    // Fetch the updated entry
+    let selectQuery = supabase.from("training_plan").select("*").eq("user_id", user.id).limit(1);
+
+    if (id) {
+      selectQuery = selectQuery.eq("id", id);
+    } else {
+      selectQuery = selectQuery.eq("datum", updates.datum || datum);
+    }
+
+    const { data, error: selectError } = await selectQuery.single();
+
+    if (selectError || !data) {
+      console.error("Training plan fetch after update error:", selectError);
+      // Return success even if we can't fetch (the update likely worked)
+      return jsonResponse({ success: true, entry: null });
     }
 
     return jsonResponse({ success: true, entry: data });

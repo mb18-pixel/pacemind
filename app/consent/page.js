@@ -1,7 +1,7 @@
 import ConsentDialog from "@/components/ConsentDialog";
 
 export const metadata = {
-  title: "Einwilligung – PaceMind",
+  title: "Einwilligung – Ascend",
 };
 
 export default function ConsentPage() {

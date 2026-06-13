@@ -2,87 +2,20 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Calendar, Footprints, LogOut, MessageSquare } from "lucide-react";
+import { Footprints, LogOut, MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { useEffect, useState } from "react";
-import InstallAppModal from "@/components/InstallAppModal";
 
 const links = [
   { href: "/chat", label: "Coach", icon: MessageSquare },
-  { href: "/kalender", label: "Kalender", icon: Calendar, tutorial: "nav-kalender" },
   { href: "/laeufe", label: "Läufe", icon: Footprints, tutorial: "nav-laeufe" },
 ];
 
 const authPaths = ["/login", "/register", "/consent", "/onboarding"];
 
-const INSTALLED_KEY = "installBannerInstalled";
-
-function isStandalone() {
-  if (typeof window === "undefined") return false;
-  return (
-    window.navigator.standalone === true ||
-    window.matchMedia?.("(display-mode: standalone)")?.matches
-  );
-}
-
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const isAuthPage = authPaths.includes(pathname);
-
-  const [installOpen, setInstallOpen] = useState(false);
-  const [installed, setInstalled] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return isStandalone() || localStorage.getItem(INSTALLED_KEY) === "1";
-  });
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    // Initial check (falls SW/DOM später ready ist)
-    Promise.resolve().then(() => {
-      setInstalled(isStandalone() || localStorage.getItem(INSTALLED_KEY) === "1");
-    });
-
-    const bipHandler = (e) => {
-      // Android/Chrome: beforeinstallprompt
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-    window.addEventListener("beforeinstallprompt", bipHandler);
-
-    const installedHandler = () => {
-      localStorage.setItem(INSTALLED_KEY, "1");
-      setInstalled(true);
-      setDeferredPrompt(null);
-      setInstallOpen(false);
-    };
-    window.addEventListener("appinstalled", installedHandler);
-
-    const openInstallModalHandler = () => {
-      if (isStandalone() || localStorage.getItem(INSTALLED_KEY) === "1") return;
-      setInstallOpen(true);
-    };
-    window.addEventListener("pacemind-open-install-modal", openInstallModalHandler);
-
-    const mq = window.matchMedia?.("(display-mode: standalone)");
-    const mqHandler = (e) => {
-      if (e.matches) {
-        localStorage.setItem(INSTALLED_KEY, "1");
-        setInstalled(true);
-        setInstallOpen(false);
-      }
-    };
-    mq?.addEventListener?.("change", mqHandler);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", bipHandler);
-      window.removeEventListener("appinstalled", installedHandler);
-      window.removeEventListener("pacemind-open-install-modal", openInstallModalHandler);
-      mq?.removeEventListener?.("change", mqHandler);
-    };
-  }, []);
 
   async function handleLogout() {
     const supabase = createClient();
@@ -97,7 +30,7 @@ export default function Navbar() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <Link href="/" className="group shrink-0">
             <span className="text-lg font-black uppercase tracking-tight text-text sm:text-xl">
-              PaceMind
+              Ascend
             </span>
             <span className="block text-[10px] font-bold uppercase tracking-widest text-accent sm:text-xs">
               by PerformanceProtokoll
@@ -128,7 +61,7 @@ export default function Navbar() {
         <div className="mx-auto max-w-5xl px-4 py-5">
           <Link href="/login" className="group inline-block">
             <span className="text-xl font-extrabold uppercase tracking-tight text-text">
-              PaceMind
+              Ascend
             </span>
             <span className="mt-0.5 block text-xs font-semibold uppercase tracking-widest text-accent">
               by PerformanceProtokoll
@@ -145,7 +78,7 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
         <Link href="/chat" className="group shrink-0">
           <span className="text-lg font-extrabold uppercase tracking-tight text-text sm:text-xl">
-            PaceMind
+            Ascend
           </span>
           <span className="block text-[10px] font-semibold uppercase tracking-widest text-accent sm:text-xs">
             by PerformanceProtokoll
@@ -174,18 +107,6 @@ export default function Navbar() {
             );
           })}
 
-          {!installed && !isStandalone() ? (
-            <button
-              type="button"
-              onClick={() => setInstallOpen(true)}
-              data-tutorial="nav-install"
-              className="flex items-center gap-1.5 rounded-md border border-border/40 bg-surface-elevated/40 px-3 py-2 text-xs font-bold uppercase tracking-wide text-text transition-all duration-200 hover:border-accent hover:text-white sm:px-4 sm:text-sm"
-            >
-              <span aria-hidden>📲</span>
-              <span>App installieren</span>
-            </button>
-          ) : null}
-
           <button
             type="button"
             onClick={handleLogout}
@@ -196,17 +117,6 @@ export default function Navbar() {
           </button>
         </nav>
       </div>
-
-      <InstallAppModal
-        open={installOpen}
-        onClose={() => setInstallOpen(false)}
-        deferredPrompt={deferredPrompt}
-        onInstalled={() => {
-          localStorage.setItem(INSTALLED_KEY, "1");
-          setInstalled(true);
-          setInstallOpen(false);
-        }}
-      />
     </header>
   );
 }

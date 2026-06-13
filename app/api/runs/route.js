@@ -46,6 +46,7 @@ export async function POST(request) {
       heartRateMax,
       feeling,
       notes,
+      sportArt,
     } = body;
 
     const run = await insertRun(supabase, user.id, {
@@ -55,6 +56,7 @@ export async function POST(request) {
       herzfrequenz_max: heartRateMax ? Number(heartRateMax) : null,
       befinden: Number(feeling),
       notizen: notes || "",
+      sport_art: sportArt || "laufen",
     });
 
     return Response.json({ run }, {

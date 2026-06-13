@@ -8,11 +8,10 @@ import {
   MapPin,
   User,
   Target,
-  Calendar,
   Sparkles,
 } from "lucide-react";
 
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 12;
 
 const WOCHENTAGE = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
@@ -53,19 +52,20 @@ const FITNESS_OPTIONS = [
 ];
 
 const ZIEL_OPTIONS = [
-  { value: "5k", title: "5K verbessern" },
-  { value: "10k", title: "10K laufen oder verbessern" },
-  { value: "halbmarathon", title: "Halbmarathon" },
-  { value: "marathon", title: "Marathon" },
-  { value: "abnehmen", title: "Abnehmen durch Laufen" },
-  { value: "gesund", title: "Gesund und fit bleiben" },
+  { value: "5k", title: "5K", subtext: "3,1 km", category: "wettkampf" },
+  { value: "10k", title: "10K", subtext: "6,2 km", category: "wettkampf" },
+  { value: "halbmarathon", title: "Halbmarathon", subtext: "21,1 km", category: "wettkampf" },
+  { value: "marathon", title: "Marathon", subtext: "42,2 km", category: "wettkampf" },
+  { value: "ultramarathon", title: "Ultramarathon", subtext: "50km+", category: "wettkampf" },
+  { value: "gesund bleiben", title: "Gesund bleiben", subtext: "Bewegung & Wohlbefinden", category: "gesundheit" },
+  { value: "abnehmen", title: "Abnehmen", subtext: "Durch regelmäßiges Laufen", category: "gesundheit" },
+  { value: "fit bleiben", title: "Fit bleiben", subtext: "Kondition aufbauen", category: "gesundheit" },
 ];
 
 const initialForm = {
   vorname: "",
   geschlecht: "",
   alterJahre: "",
-  gewichtKg: "",
   koerperfettanteil: "",
   stadtQuery: "",
   stadt: "",
@@ -77,6 +77,12 @@ const initialForm = {
   zielDatum: "",
   zielPace: "",
   zielDistanz: "",
+  zielzeit: "",
+  aktuelleTrainingsfrequenz: "",
+  aktuelleDistanz: "",
+  referenzzeit: "",
+  referenzdistanz: "5k",
+  zielzeitBerechnet: false,
   slots: Array.from({ length: 7 }, (_, i) => ({
     wochentag: i,
     verfuegbar: false,
@@ -84,6 +90,71 @@ const initialForm = {
     uhrzeit_ende: "",
   })),
 };
+
+const VDOT_MAPPING = {
+  marathon: {
+    28: "5:30:00", 35: "4:22:00", 40: "3:49:00", 42: "3:38:00", 46: "3:22:00", 50: "3:07:00", 55: "2:52:00", 60: "2:38:00"
+  },
+  halbmarathon: {
+    28: "2:35:00", 35: "2:03:00", 40: "1:47:00", 42: "1:42:00", 46: "1:34:00", 50: "1:27:00"
+  },
+  "10k": {
+    28: "1:08:00", 35: "54:00", 40: "47:30", 42: "45:30", 46: "42:00", 50: "38:30"
+  },
+  "5k": {
+    28: "32:00", 35: "25:30", 40: "22:30", 42: "21:30", 46: "19:30", 50: "18:00"
+  }
+};
+
+function timeToSeconds(timeStr) {
+  if (!timeStr) return 0;
+  const parts = timeStr.split(":").map(Number);
+  if (parts.length === 3) return parts[0]*3600 + parts[1]*60 + parts[2];
+  if (parts.length === 2) return parts[0]*60 + parts[1];
+  return 0;
+}
+
+function getVdotFromReference(distanz, timeStr) {
+  const mapping = VDOT_MAPPING[distanz];
+  if (!mapping) return 35;
+  const targetSecs = timeToSeconds(timeStr);
+  if (targetSecs === 0) return 35;
+  let closestVdot = 35;
+  let minDiff = Infinity;
+  for (const [vdotStr, tStr] of Object.entries(mapping)) {
+    const diff = Math.abs(timeToSeconds(tStr) - targetSecs);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closestVdot = Number(vdotStr);
+    }
+  }
+  return closestVdot;
+}
+
+function estimateVDOT(frequenz, fitness) {
+  if (frequenz === "garnicht" || fitness === "einsteiger") return 28;
+  if (frequenz === "5+" && fitness === "fortgeschritten") return 52;
+  if (frequenz === "3-4" && fitness === "hobby") return 42;
+  return 35; 
+}
+
+function calculateImprovement(weeks) {
+  if (weeks <= 4) return 2;
+  if (weeks <= 8) return 4;
+  if (weeks <= 16) return 7;
+  return 10;
+}
+
+function getZielzeit(vdot, ziel) {
+  const mapping = VDOT_MAPPING[ziel];
+  if (!mapping) return null;
+  const keys = Object.keys(mapping).map(Number).sort((a,b) => a-b);
+  let closest = keys[0];
+  for (let k of keys) {
+    if (Math.abs(k - vdot) < Math.abs(closest - vdot)) closest = k;
+  }
+  return mapping[closest];
+}
 
 export default function OnboardingWizard() {
   const router = useRouter();
@@ -95,12 +166,34 @@ export default function OnboardingWizard() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [customGoalMode, setCustomGoalMode] = useState(false);
+  const [customKfaMode, setCustomKfaMode] = useState(false);
+  const [referenzzeitFehler, setReferenzzeitFehler] = useState("");
 
   const progress = (step / TOTAL_STEPS) * 100;
 
   const updateForm = useCallback((patch) => {
     setForm((prev) => ({ ...prev, ...patch }));
   }, []);
+
+  function validiereReferenzzeit(wert) {
+    if (!wert || wert.trim() === '') return true; // optional
+    
+    // Erlaubte Formate: M:SS, MM:SS, H:MM:SS, HH:MM:SS
+    const pattern = /^\d{1,2}:\d{2}(:\d{2})?$/;
+    return pattern.test(wert.trim());
+  }
+
+  function handleReferenzzeitChange(e) {
+    const wert = e.target.value;
+    updateForm({ referenzzeit: wert });
+    
+    if (wert && !validiereReferenzzeit(wert)) {
+      setReferenzzeitFehler('Format: MM:SS (z.B. 25:30 für 5K)');
+    } else {
+      setReferenzzeitFehler('');
+    }
+  }
 
   useEffect(() => {
     if (step !== 2 || form.stadtQuery.trim().length < 2) {
@@ -148,15 +241,13 @@ export default function OnboardingWizard() {
 
   function validateStep() {
     setError(null);
+    const healthGoals = ["gesund bleiben", "abnehmen", "fit bleiben"];
     switch (step) {
       case 1:
         if (!form.vorname.trim()) return "Bitte gib deinen Vornamen ein.";
         if (!form.geschlecht) return "Bitte wähle dein Geschlecht.";
         if (!form.alterJahre || Number(form.alterJahre) < 18 || Number(form.alterJahre) > 100) {
           return "Du musst mindestens 18 Jahre alt sein.";
-        }
-        if (!form.gewichtKg || Number(form.gewichtKg) < 30 || Number(form.gewichtKg) > 250) {
-          return "Bitte gib ein realistisches Gewicht ein.";
         }
         if (form.koerperfettanteil && (Number(form.koerperfettanteil) < 3 || Number(form.koerperfettanteil) > 60)) {
           return "Bitte gib einen realistischen Wert ein.";
@@ -174,20 +265,32 @@ export default function OnboardingWizard() {
         if (!form.ziel) return "Bitte wähle dein Ziel.";
         return null;
       case 5:
-        if (!form.zielDatum) return "Bitte wähle dein Zieldatum.";
-        return null;
-      case 6:
-        if (form.zielPace) {
-          const paceRegex = /^\d+:[0-5]\d$/;
-          if (!paceRegex.test(form.zielPace)) {
-            return "Bitte gib die Zielpace im Format MM:SS ein (z. B. 5:30).";
-          }
-          if (!form.zielDistanz) {
-            return "Bitte wähle eine Distanz für deine Zielpace.";
-          }
+        // Skip validation for health goals
+        if (!healthGoals.includes(form.ziel) && !form.zielDatum) {
+          return "Bitte wähle dein Zieldatum.";
         }
         return null;
-      case 7: {
+      case 6:
+        if (!form.aktuelleTrainingsfrequenz) return "Bitte wähle deine Trainingsfrequenz.";
+        return null;
+      case 7:
+        if (!form.aktuelleDistanz) return "Bitte wähle deine typische Distanz.";
+        return null;
+      case 8:
+        if (referenzzeitFehler) {
+          return referenzzeitFehler;
+        }
+        if (form.referenzzeit && !validiereReferenzzeit(form.referenzzeit)) {
+          return "Bitte gib die Zeit im Format MM:SS oder HH:MM:SS ein.";
+        }
+        return null;
+      case 9:
+        // Skip validation for health goals
+        if (!healthGoals.includes(form.ziel) && !form.zielzeit) {
+          return "Bitte bestätige oder bearbeite deine Zielzeit.";
+        }
+        return null;
+      case 10: {
         const activeSlots = form.slots.filter((s) => s.verfuegbar);
         if (activeSlots.length < 2) {
           return "Bitte wähle mindestens 2 Trainingstage";
@@ -214,6 +317,15 @@ export default function OnboardingWizard() {
       return;
     }
     setSlideDir("forward");
+    
+    // Skip goal input steps for health goals
+    const healthGoals = ["gesund bleiben", "abnehmen", "fit bleiben"];
+    if (step === 4 && healthGoals.includes(form.ziel)) {
+      // Skip to training times step (step 10)
+      setStep(10);
+      return;
+    }
+    
     setStep((s) => Math.min(s + 1, TOTAL_STEPS));
   }
 
@@ -230,6 +342,18 @@ export default function OnboardingWizard() {
       const availableSlots = form.slots.filter((s) => s.verfuegbar);
       const trainingstageValue = availableSlots.length;
 
+      // Save referenzzeit to appropriate field based on goal
+      let referenzzeit_5k = null;
+      let referenzzeit_10k = null;
+      
+      if (form.referenzzeit) {
+        if (form.ziel === "10k") {
+          referenzzeit_10k = form.referenzzeit;
+        } else {
+          referenzzeit_5k = form.referenzzeit;
+        }
+      }
+
       const res = await fetch("/api/onboarding", {
         method: "POST",
         headers: {
@@ -240,7 +364,6 @@ export default function OnboardingWizard() {
           vorname: form.vorname,
           geschlecht: form.geschlecht,
           alterJahre: form.alterJahre,
-          gewichtKg: form.gewichtKg,
           koerperfettanteil: form.koerperfettanteil || null,
           stadt: form.stadt,
           land: form.land,
@@ -248,11 +371,17 @@ export default function OnboardingWizard() {
           longitude: form.longitude,
           fitnesslevel: form.fitnesslevel,
           ziel: form.ziel,
-          zielDatum: form.zielDatum,
+          zielDatum: form.zielDatum || null,
           zielPace: form.zielPace || null,
           zielDistanz: form.zielDistanz || null,
+          zielzeit: form.zielzeit || null,
+          aktuelleTrainingsfrequenz: form.aktuelleTrainingsfrequenz || null,
+          aktuelleDistanz: form.aktuelleDistanz || null,
+          zielzeitBerechnet: form.zielzeitBerechnet,
           trainingstage: trainingstageValue,
           slots: availableSlots,
+          referenzzeit_5k: referenzzeit_5k,
+          referenzzeit_10k: referenzzeit_10k,
         }),
       });
 
@@ -317,51 +446,110 @@ export default function OnboardingWizard() {
                 ))}
               </div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-1">
               <label className="block">
                 <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-text-muted">
                   Alter (Jahre)
                 </span>
                 <input
                   type="number"
-                  min="10"
+                  min="18"
                   max="100"
                   value={form.alterJahre}
                   onChange={(e) => updateForm({ alterJahre: e.target.value })}
                   className="input-field"
                 />
               </label>
-              <label className="block">
-                <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-text-muted">
-                  Gewicht (kg)
-                </span>
-                <input
-                  type="number"
-                  min="30"
-                  step="0.1"
-                  value={form.gewichtKg}
-                  onChange={(e) => updateForm({ gewichtKg: e.target.value })}
-                  className="input-field"
-                />
-              </label>
             </div>
-            <label className="block">
+            
+            <div className="pt-2">
               <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-text-muted">
-                Körperfettanteil ca. (%, optional)
+                Körperfettanteil (optional)
               </span>
-              <input
-                type="number"
-                min="3"
-                max="60"
-                step="0.1"
-                value={form.koerperfettanteil}
-                onChange={(e) =>
-                  updateForm({ koerperfettanteil: e.target.value })
-                }
-                className="input-field"
-                placeholder="optional"
-              />
-            </label>
+              <p className="mb-4 text-xs text-text-muted">
+                Keine exakte Messung nötig – wähle was am besten passt. Hilft uns bei der Trainingsintensität.
+              </p>
+              
+              {!customKfaMode ? (
+                <div className="grid gap-3 grid-cols-2 sm:grid-cols-3">
+                  {[
+                    { id: 1, title: "Sehr schlank", sub: "Rippen/Adern sichtbar", valM: 7, valF: 15, txtM: "6–9%", txtF: "14–17%" },
+                    { id: 2, title: "Schlank / Athletisch", sub: "Bauchmuskeln sichtbar", valM: 12, valF: 20, txtM: "10–14%", txtF: "18–22%" },
+                    { id: 3, title: "Fit", sub: "Definierter Körperbau", valM: 17, valF: 25, txtM: "15–19%", txtF: "23–27%" },
+                    { id: 4, title: "Durchschnittlich", sub: "Leichte Fettpolster", valM: 22, valF: 30, txtM: "20–24%", txtF: "28–32%" },
+                    { id: 5, title: "Über Durchschnitt", sub: "Deutliche Fettpolster", valM: 27, valF: 35, txtM: "25–29%", txtF: "33–37%" },
+                    { id: 6, title: "Übergewichtig", sub: "Deutliches Übergewicht", valM: 32, valF: 40, txtM: "30%+", txtF: "38%+" },
+                  ].map((card) => {
+                    const isM = form.geschlecht === "maennlich";
+                    const isF = form.geschlecht === "weiblich";
+                    const isD = form.geschlecht === "divers" || !form.geschlecht;
+                    
+                    const displayTxt = isD ? `M: ${card.txtM} | F: ${card.txtF}` : isM ? card.txtM : card.txtF;
+                    const valToSet = isD ? Math.round((card.valM + card.valF) / 2) : isM ? card.valM : card.valF;
+                    const isSelected = Number(form.koerperfettanteil) === valToSet;
+
+                    return (
+                      <button
+                        key={card.id}
+                        type="button"
+                        onClick={() => updateForm({ koerperfettanteil: valToSet })}
+                        className={`flex flex-col items-center justify-center rounded-xl border p-3 text-center transition-all ${
+                          isSelected
+                            ? "border-accent bg-accent/15 text-text shadow-[0_0_12px_rgba(230,50,40,0.25)]"
+                            : "border-border bg-surface hover:border-accent/50"
+                        }`}
+                      >
+                        <User className={isSelected ? "text-accent mb-2" : "text-text-muted mb-2"} size={24} />
+                        <span className="text-xs font-bold uppercase tracking-tight">{card.title}</span>
+                        <span className="mt-1 text-[10px] text-text-muted leading-tight">{card.sub}</span>
+                        <span className="mt-2 text-xs font-black text-white bg-bg px-2 py-0.5 rounded-md border border-border">
+                          {displayTxt}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <label className="block max-w-xs">
+                  <input
+                    type="number"
+                    min="3"
+                    max="60"
+                    step="0.1"
+                    value={form.koerperfettanteil}
+                    onChange={(e) => updateForm({ koerperfettanteil: e.target.value })}
+                    className="input-field"
+                    placeholder="z.B. 15.5"
+                    autoFocus
+                  />
+                </label>
+              )}
+              
+              <div className="mt-4 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomKfaMode(!customKfaMode);
+                    if (customKfaMode) updateForm({ koerperfettanteil: "" });
+                  }}
+                  className="text-xs font-semibold text-accent hover:underline"
+                >
+                  {customKfaMode ? "← Zurück zur visuellen Auswahl" : "Ich weiß es genau (Manuelle Eingabe)"}
+                </button>
+                {!customKfaMode && form.koerperfettanteil && (
+                  <>
+                    <span className="text-text-muted text-xs">•</span>
+                    <button
+                      type="button"
+                      onClick={() => updateForm({ koerperfettanteil: "" })}
+                      className="text-xs font-semibold text-text-muted hover:text-white"
+                    >
+                      Auswahl aufheben
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         );
 
@@ -478,23 +666,64 @@ export default function OnboardingWizard() {
                 Dein Ziel
               </h2>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {ZIEL_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => updateForm({ ziel: opt.value })}
-                  className={`rounded-md border p-5 text-left transition-all ${
-                    form.ziel === opt.value
-                      ? "border-accent bg-accent/15 shadow-[0_0_20px_rgba(230,50,40,0.2)]"
-                      : "border-border bg-surface hover:border-accent/40"
-                  }`}
-                >
-                  <p className="font-extrabold uppercase tracking-tight text-text">
-                    {opt.title}
-                  </p>
-                </button>
-              ))}
+            
+            {/* Wettkampf-Ziele */}
+            <div>
+              <p className="mb-3 text-xs font-extrabold uppercase tracking-widest text-accent">
+                WETTKAMPF
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {ZIEL_OPTIONS.filter(opt => opt.category === "wettkampf").map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => updateForm({ ziel: opt.value })}
+                    className={`rounded-md border p-4 text-left transition-all ${
+                      form.ziel === opt.value
+                        ? "border-accent bg-accent/15 shadow-[0_0_20px_rgba(230,50,40,0.2)]"
+                        : "border-border bg-surface hover:border-accent/40"
+                    }`}
+                  >
+                    <p className="font-extrabold uppercase tracking-tight text-text">
+                      {opt.title}
+                    </p>
+                    <p className="mt-1 text-xs text-text-muted">
+                      {opt.subtext}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Rote Trennlinie */}
+            <div className="h-px bg-gradient-to-r from-transparent via-accent to-transparent" />
+
+            {/* Gesundheits- & Fitnessziele */}
+            <div>
+              <p className="mb-3 text-xs font-extrabold uppercase tracking-widest text-accent">
+                GESUNDHEIT & FITNESS
+              </p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {ZIEL_OPTIONS.filter(opt => opt.category === "gesundheit").map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => updateForm({ ziel: opt.value })}
+                    className={`rounded-md border p-4 text-left transition-all ${
+                      form.ziel === opt.value
+                        ? "border-accent bg-accent/15 shadow-[0_0_20px_rgba(230,50,40,0.2)]"
+                        : "border-border bg-surface hover:border-accent/40"
+                    }`}
+                  >
+                    <p className="font-extrabold uppercase tracking-tight text-text">
+                      {opt.title}
+                    </p>
+                    <p className="mt-1 text-xs text-text-muted">
+                      {opt.subtext}
+                    </p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         );
@@ -503,7 +732,7 @@ export default function OnboardingWizard() {
         return (
           <div className="space-y-5">
             <div className="flex items-center gap-3">
-              <Calendar className="text-accent" size={22} />
+              <Target className="text-accent" size={22} />
               <h2 className="text-xl font-extrabold uppercase tracking-tight text-text">
                 Zieldatum
               </h2>
@@ -533,56 +762,208 @@ export default function OnboardingWizard() {
             <div className="flex items-center gap-3">
               <Target className="text-accent" size={22} />
               <h2 className="text-xl font-extrabold uppercase tracking-tight text-text">
-                Zielpace (optional)
+                Trainingsfrequenz
               </h2>
             </div>
             <p className="text-sm leading-relaxed text-text-muted">
-              Hast du eine konkrete Pace-Vorgabe für deine Zieldistanz? (z. B. 5:30 min/km)
+              Wie oft läufst du aktuell?
             </p>
-            
-            <label className="block">
-              <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-text-muted">
-                Zielpace (Format MM:SS, z. B. 5:30)
-              </span>
-              <input
-                type="text"
-                placeholder="5:30"
-                value={form.zielPace}
-                onChange={(e) => updateForm({ zielPace: e.target.value })}
-                className="input-field"
-              />
-            </label>
-
-            <div>
-              <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-text-muted">
-                Dafür gewählte Distanz
-              </span>
-              <div className="grid gap-2 grid-cols-2 sm:grid-cols-4">
-                {["5K", "10K", "Halbmarathon", "Marathon"].map((dist) => (
-                  <button
-                    key={dist}
-                    type="button"
-                    onClick={() => updateForm({ zielDistanz: dist })}
-                    className={`rounded-md border px-4 py-3 text-sm font-bold uppercase tracking-wide transition-all ${
-                      form.zielDistanz === dist
-                        ? "border-accent bg-accent/15 text-text shadow-[0_0_16px_rgba(230,50,40,0.25)]"
-                        : "border-border bg-surface text-text-muted hover:border-accent/50"
-                    }`}
-                  >
-                    {dist}
-                  </button>
-                ))}
-              </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[
+                { value: "garnicht", label: "Gar nicht" },
+                { value: "1-2", label: "1-2x / Woche" },
+                { value: "3-4", label: "3-4x / Woche" },
+                { value: "5+", label: "5x+ / Woche" },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => updateForm({ aktuelleTrainingsfrequenz: opt.value })}
+                  className={`rounded-md border p-4 text-center font-bold uppercase tracking-wide transition-all ${
+                    form.aktuelleTrainingsfrequenz === opt.value
+                      ? "border-accent bg-accent/15 text-text shadow-[0_0_16px_rgba(230,50,40,0.25)]"
+                      : "border-border bg-surface text-text-muted hover:border-accent/50"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
         );
 
-      case 7: {
+      case 7:
+        return (
+          <div className="space-y-5">
+            <div className="flex items-center gap-3">
+              <Target className="text-accent" size={22} />
+              <h2 className="text-xl font-extrabold uppercase tracking-tight text-text">
+                Aktuelle Distanz
+              </h2>
+            </div>
+            <p className="text-sm leading-relaxed text-text-muted">
+              Wie weit läufst du typischerweise?
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[
+                { value: "unter3", label: "Unter 3km" },
+                { value: "3-5", label: "3-5km" },
+                { value: "5-10", label: "5-10km" },
+                { value: "ueber10", label: "Über 10km" },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => updateForm({ aktuelleDistanz: opt.value })}
+                  className={`rounded-md border p-4 text-center font-bold uppercase tracking-wide transition-all ${
+                    form.aktuelleDistanz === opt.value
+                      ? "border-accent bg-accent/15 text-text shadow-[0_0_16px_rgba(230,50,40,0.25)]"
+                      : "border-border bg-surface text-text-muted hover:border-accent/50"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 8:
+        return (
+          <div className="space-y-5">
+            <div className="flex items-center gap-3">
+              <Target className="text-accent" size={22} />
+              <h2 className="text-xl font-extrabold uppercase tracking-tight text-text">
+                Referenzzeit (optional)
+              </h2>
+            </div>
+            <p className="text-sm leading-relaxed text-text-muted">
+              Hast du eine aktuelle Bestzeit über 5K oder 10K? Dies hilft uns, dein Ziel noch genauer zu berechnen.
+            </p>
+            <div className="flex gap-2">
+              <select
+                value={form.referenzdistanz}
+                onChange={(e) => updateForm({ referenzdistanz: e.target.value })}
+                className="input-field w-32"
+              >
+                <option value="5k">5K</option>
+                <option value="10k">10K</option>
+              </select>
+              <input
+                type="text"
+                value={form.referenzzeit}
+                onChange={handleReferenzzeitChange}
+                placeholder="z.B. 25:30"
+                inputMode="numeric"
+                autoComplete="off"
+                className="input-field flex-1"
+              />
+            </div>
+            {referenzzeitFehler && (
+              <p style={{ color: '#e63228', fontSize: '12px', marginTop: '6px' }}>
+                {referenzzeitFehler}
+              </p>
+            )}
+            <div className="pt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  updateForm({ referenzzeit: "" });
+                  setReferenzzeitFehler("");
+                  goNext();
+                }}
+                className="btn-secondary w-full"
+              >
+                Keine Referenzzeit (Überspringen)
+              </button>
+            </div>
+          </div>
+        );
+
+      case 9: {
+        // Calculate only if not already manually edited or we don't have one
+        let computedVdot = 35;
+        if (form.referenzzeit) {
+          computedVdot = getVdotFromReference(form.referenzdistanz, form.referenzzeit);
+        } else {
+          computedVdot = estimateVDOT(form.aktuelleTrainingsfrequenz, form.fitnesslevel);
+        }
+
+        // Weeks until goal
+        let weeks = 8;
+        if (form.zielDatum) {
+          const diffTime = Math.abs(new Date(form.zielDatum) - new Date());
+          weeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+        }
+        
+        const improvement = calculateImprovement(weeks);
+        const targetVdot = computedVdot + improvement;
+        
+        // Ensure we calculate time based on goal if it matches
+        const goalDist = ["5k", "10k", "halbmarathon", "marathon"].includes(form.ziel) ? form.ziel : "5k";
+        let calcTime = getZielzeit(targetVdot, goalDist);
+        
+        // Init target time only if not set
+        if (!form.zielzeit && calcTime && !customGoalMode) {
+          setTimeout(() => updateForm({ zielzeit: calcTime, zielzeitBerechnet: true }), 0);
+        }
+
+        return (
+          <div className="space-y-5">
+            <div className="flex items-center gap-3">
+              <Sparkles className="text-accent" size={22} />
+              <h2 className="text-xl font-extrabold uppercase tracking-tight text-text">
+                Realistisches Ziel
+              </h2>
+            </div>
+            <div className="rounded-xl border border-border bg-surface-elevated p-6 text-center shadow-lg">
+              <p className="text-sm font-bold uppercase tracking-widest text-text-muted mb-2">
+                Berechnete Zielzeit ({goalDist})
+              </p>
+              {customGoalMode ? (
+                <input
+                  type="text"
+                  value={form.zielzeit}
+                  onChange={(e) => updateForm({ zielzeit: e.target.value, zielzeitBerechnet: false })}
+                  className="input-field text-center text-2xl font-black mb-4"
+                  placeholder="MM:SS oder HH:MM:SS"
+                  autoFocus
+                />
+              ) : (
+                <div className="text-4xl font-black text-white mb-6">
+                  {form.zielzeit || calcTime}
+                </div>
+              )}
+
+              {!customGoalMode && (
+                <div className="space-y-2 text-sm text-text-muted">
+                  <p>→ Benötigte Verbesserung: <span className="font-bold text-accent">+{improvement} VDOT</span> in {weeks} Wochen</p>
+                  <p className="text-accent font-semibold mt-2">Ehrgeizig, aber erreichbar 🚀</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              {!customGoalMode && (
+                <button
+                  type="button"
+                  onClick={() => setCustomGoalMode(true)}
+                  className="btn-secondary flex-1"
+                >
+                  Eigene Zeit eingeben
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      case 10: {
         const selectedCount = form.slots.filter((s) => s.verfuegbar).length;
         return (
           <div className="space-y-5">
             <div className="flex items-center gap-3">
-              <Calendar className="text-accent" size={22} />
+              <Target className="text-accent" size={22} />
               <h2 className="text-xl font-extrabold uppercase tracking-tight text-text">
                 Wann kannst du trainieren?
               </h2>
@@ -688,7 +1069,7 @@ export default function OnboardingWizard() {
         );
       }
 
-      case 8:
+      case 11:
         return (
           <div className="flex flex-col items-center py-8 text-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-md bg-accent/15 shadow-[0_0_40px_rgba(230,50,40,0.3)]">
@@ -706,7 +1087,7 @@ export default function OnboardingWizard() {
           </div>
         );
 
-      case 9:
+      case 12:
         return (
           <div className="flex flex-col items-center py-8 text-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-md bg-accent/15 shadow-[0_0_40px_rgba(230,50,40,0.3)]">

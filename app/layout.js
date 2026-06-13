@@ -2,8 +2,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import InstallBanner from "@/components/InstallBanner";
 import MainLayout from "@/components/MainLayout";
+import FeedbackWidget from "@/components/FeedbackWidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "PaceMind – KI-Laufcoach",
+  title: "Ascend – KI-Laufcoach",
   description:
-    "PaceMind by PerformanceProtokoll – Dein KI-Laufcoach für smartes Training.",
+    "Ascend by PerformanceProtokoll – Dein KI-Laufcoach für smartes Training.",
 };
 
 export default function RootLayout({ children }) {
@@ -35,7 +35,7 @@ export default function RootLayout({ children }) {
           name="apple-mobile-web-app-status-bar-style"
           content="black-translucent"
         />
-        <meta name="apple-mobile-web-app-title" content="PaceMind" />
+        <meta name="apple-mobile-web-app-title" content="Ascend" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body className="flex min-h-full flex-col bg-bg font-sans text-text">
@@ -43,8 +43,8 @@ export default function RootLayout({ children }) {
         <MainLayout>
           {children}
         </MainLayout>
-        <InstallBanner />
         <Footer />
+        <FeedbackWidget />
 
         <script
           dangerouslySetInnerHTML={{

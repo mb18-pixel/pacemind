@@ -27,8 +27,8 @@ function configureWebPush() {
 function weekRangeIso(today = new Date()) {
   const d = new Date(today);
   d.setHours(0, 0, 0, 0);
-  const jsDay = d.getDay(); // 0=So
-  const daysSinceMon = jsDay === 0 ? 6 : jsDay - 1;
+  // JS: 0=So ... 6=Sa → 0=Mo ... 6=So
+  const daysSinceMon = (d.getDay() + 6) % 7;
   const start = new Date(d);
   start.setDate(d.getDate() - daysSinceMon);
   const end = new Date(start);
@@ -80,7 +80,7 @@ export async function GET(request) {
       const payload = JSON.stringify({
         title: "Dein Wochenplan ist bereit 💪",
         body: `Diese Woche: ${einheiten} Einheiten, ${Math.round(km * 10) / 10} km geplant. Tap to see.`,
-        url: "/kalender",
+        url: "/laeufe",
       });
 
       for (const sub of userSubs) {
@@ -102,4 +102,3 @@ export async function GET(request) {
     );
   }
 }
-

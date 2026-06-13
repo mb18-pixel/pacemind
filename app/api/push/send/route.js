@@ -33,7 +33,7 @@ export async function POST(request) {
     const body = await request.json();
     const { userId, title, body: msgBody, url } = body || {};
     const payload = JSON.stringify({
-      title: title || "PaceMind",
+      title: title || "Ascend",
       body: msgBody || "Dein Coach hat eine Nachricht.",
       url: url || "/chat",
     });

@@ -1,7 +1,7 @@
 import OnboardingWizard from "@/components/OnboardingWizard";
 
 export const metadata = {
-  title: "Onboarding – PaceMind",
+  title: "Onboarding – Ascend",
 };
 
 export default function OnboardingPage() {
