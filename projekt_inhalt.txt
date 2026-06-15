@@ -1,0 +1,27 @@
+total 92112
+drwxr-xr-x@  26 maximilianbramlage  staff       832 15 Juni 19:32 .
+drwx------+  10 maximilianbramlage  staff       320 13 Juni 22:03 ..
+-rw-r--r--@   1 maximilianbramlage  staff     10244 13 Juni 22:03 .DS_Store
+-rw-r--r--@   1 maximilianbramlage  staff       674 11 Juni 15:13 .env.example
+-rw-r--r--    1 maximilianbramlage  staff      1025 28 Mai  15:43 .env.local
+-rw-r--r--@   1 maximilianbramlage  staff       235 14 Juni 16:05 .env.local.example
+drwxr-xr-x   13 maximilianbramlage  staff       416 13 Juni 22:05 .git
+-rw-r--r--    1 maximilianbramlage  staff       491 22 Mai  21:55 .gitignore
+drwxr-xr-x    3 maximilianbramlage  staff        96 14 Juni 16:38 .next
+drwxr-xr-x   20 maximilianbramlage  staff       640 12 Juni 21:16 app
+drwxr-xr-x@  21 maximilianbramlage  staff       672 14 Juni 15:53 components
+-rw-r--r--    1 maximilianbramlage  staff       644  6 Juni 17:21 eslint.config.mjs
+-rw-r--r--    1 maximilianbramlage  staff        73 21 Mai  20:31 jsconfig.json
+drwxr-xr-x@  15 maximilianbramlage  staff       480  7 Juni 12:11 lib
+-rw-r--r--@   1 maximilianbramlage  staff       247 13 Juni 22:11 middleware.js
+-rw-r--r--    1 maximilianbramlage  staff       121 21 Mai  20:31 next.config.mjs
+drwxr-xr-x  327 maximilianbramlage  staff     10464 14 Juni 09:38 node_modules
+-rw-r--r--@   1 maximilianbramlage  staff    249029 14 Juni 09:38 package-lock.json
+-rw-r--r--@   1 maximilianbramlage  staff       827 14 Juni 09:38 package.json
+-rw-r--r--    1 maximilianbramlage  staff        94 21 Mai  20:31 postcss.config.mjs
+-rw-r--r--    1 maximilianbramlage  staff         0 15 Juni 19:32 projekt_inhalt.txt
+-rw-r--r--    1 maximilianbramlage  staff  46849585 13 Juni 16:13 projektcode.txt
+drwxr-xr-x   13 maximilianbramlage  staff       416 13 Juni 22:03 public
+-rw-r--r--@   1 maximilianbramlage  staff      2208 29 Mai  17:39 README.md
+drwxr-xr-x@  13 maximilianbramlage  staff       416 13 Juni 21:53 supabase
+-rw-r--r--    1 maximilianbramlage  staff       182 28 Mai  13:56 vercel.json

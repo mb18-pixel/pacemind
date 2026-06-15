@@ -10,9 +10,11 @@ export default function AuthForm({
   submitLabel,
   onSubmit,
   footerLink,
+  showHoneypot = false,
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [honeypot, setHoneypot] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -22,7 +24,7 @@ export default function AuthForm({
     setLoading(true);
 
     try {
-      await onSubmit({ email, password });
+      await onSubmit({ email, password, honeypot });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -77,6 +79,18 @@ export default function AuthForm({
                 placeholder="Mindestens 6 Zeichen"
               />
             </label>
+
+            {showHoneypot && (
+              <input
+                type="text"
+                name="website"
+                style={{ display: 'none' }}
+                tabIndex={-1}
+                autoComplete="off"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+              />
+            )}
 
             {error && (
               <p className="rounded-md border border-accent/30 bg-accent/10 px-3 py-2 text-sm text-accent">

@@ -10,6 +10,8 @@ import {
   Flame,
   Cpu,
   Activity,
+  Brain,
+  AlertTriangle,
 } from "lucide-react";
 
 // ─── Hero Headline: Wörter einzeln einblenden ───────────────────────────────
@@ -165,6 +167,106 @@ function StepCard({ number, title, text, delay = 0 }) {
   );
 }
 
+// ─── Chat Mockup ───────────────────────────────────────────────────────────────
+function ChatMockup({ type, messages, delay = 0 }) {
+  const [ref, visible] = useScrollReveal();
+
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ease-out ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+      }`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+    <div
+      className={`rounded-xl border ${
+        type === "ascend"
+          ? "border-[#e63228]/30 bg-[#0f0f0f] border-l-4 border-l-[#e63228]"
+          : "border-[#1a1a1a] bg-[#0f0f0f]"
+      } p-5 h-full`}
+    >
+      <div className={`text-xs font-bold uppercase tracking-wider mb-4 ${
+        type === "ascend" ? "text-[#e63228]" : "text-[#666]"
+      }`}>
+        {type === "ascend" ? "⚡ ASCEND" : "💬 Herrkömmliche KIs"}
+      </div>
+      <div className="space-y-3">
+        {messages.map((msg, i) => (
+          <div
+            key={i}
+            className={`rounded-lg p-3 text-sm ${
+              msg.role === "user"
+                ? "bg-[#1a1a1a] text-[#aaa]"
+                : type === "ascend"
+                ? "bg-[#e63228]/10 text-white border border-[#e63228]/20"
+                : "bg-[#1f1f1f] text-[#888]"
+            }`}
+          >
+            {msg.content}
+          </div>
+        ))}
+      </div>
+    </div>
+    </div>
+  );
+}
+
+// ─── Key Difference Card ───────────────────────────────────────────────────────
+function KeyDifferenceCard({ icon: Icon, title, text, delay = 0 }) {
+  const [ref, visible] = useScrollReveal();
+
+  return (
+    <div
+      ref={ref}
+      className={`flex flex-col rounded-xl border border-[#1f1f1f] bg-[#111]/70 p-8 backdrop-blur-sm transition-all duration-700 ease-out hover:border-[#e63228]/25 ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
+      }`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-xl bg-[#e63228]/12">
+        <Icon size={28} className="text-[#e63228]" strokeWidth={2.5} />
+      </div>
+      <h3 className="mb-4 text-xl font-black uppercase tracking-tight text-white">
+        {title}
+      </h3>
+      <p className="text-base leading-relaxed text-[#888]">{text}</p>
+    </div>
+  );
+}
+
+// ─── Quote Section ─────────────────────────────────────────────────────────────
+function QuoteSection() {
+  const [ref, visible] = useScrollReveal();
+
+  return (
+    <div
+      ref={ref}
+      className={`text-center transition-all duration-700 ease-out ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+      }`}
+    >
+      <div className="relative">
+        <span
+          className="absolute -top-8 -left-4 text-[8rem] font-black text-[#e63228]/20 leading-none select-none"
+          style={{ fontFamily: "serif" }}
+        >
+          "
+        </span>
+        <blockquote
+          className="relative text-2xl md:text-4xl font-black leading-tight text-white max-w-4xl mx-auto"
+          style={{ fontSize: "clamp(1.5rem, 4vw, 2.5rem)" }}
+        >
+          Der Unterschied ist wie zwischen einem Google-Suchergebnis und einem Physiotherapeuten der dich seit Jahren kennt.
+        </blockquote>
+        <cite className="block mt-6 text-sm font-bold uppercase tracking-widest text-[#666] not-italic">
+          – PerformanceProtokoll
+        </cite>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Landing Page ───────────────────────────────────────────────────────
 export default function LandingPage() {
   const [isMobile, setIsMobile] = useState(false);
@@ -179,6 +281,7 @@ export default function LandingPage() {
 
     return () => window.removeEventListener("resize", updateViewport);
   }, []);
+
 
   const scrollDown = () => {
     document.getElementById("stats-section")?.scrollIntoView({ behavior: "smooth" });
@@ -218,32 +321,12 @@ export default function LandingPage() {
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: isMobile
-              ? "linear-gradient(135deg, #0a0a0a 0%, #1a0505 50%, #0a0a0a 100%)"
-              : "url('/images/running-poster.jpg')",
+            backgroundImage: "url('/images/running-poster.jpg')",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
             backgroundSize: "cover",
           }}
         />
-
-        {!isMobile && (
-          <video
-            poster="/images/running-poster.jpg"
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="absolute inset-0 h-full w-full"
-            style={{
-              objectFit: "cover",
-              zIndex: 0,
-              opacity: 0.4,
-            }}
-          >
-            <source src="/videos/running.mp4" type="video/mp4" />
-          </video>
-        )}
 
         <div
           className="absolute inset-0"
@@ -304,7 +387,103 @@ export default function LandingPage() {
       </section>
 
       {/* ══════════════════════════════════════════════════
-          SECTION 2 – SOCIAL PROOF
+          SECTION 3 – CHAT VERGLEICH
+      ══════════════════════════════════════════════════ */}
+      <section className="border-t border-[#1a1a1a] bg-[#0a0a0a] px-4 py-24">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-16 text-center">
+            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-white mb-4">
+              Der Unterschied im Detail
+            </h2>
+          </div>
+
+          {/* Desktop: Side by side */}
+          <div className="hidden md:grid md:grid-cols-2 gap-8">
+            <ChatMockup
+              type="generic"
+              delay={0}
+              messages={[
+                { role: "user", content: "Ich will einen 10K in 45 Min laufen" },
+                { role: "assistant", content: "Super Ziel! Hier sind einige allgemeine Tipps für dein 10K Training:\n1. Laufe 3-4 mal pro Woche\n2. Steigere dein Volumen langsam\n3. Mache Intervalltraining..." },
+              ]}
+            />
+            <ChatMockup
+              type="ascend"
+              delay={100}
+              messages={[
+                { role: "user", content: "Ich will einen 10K in 45 Min laufen" },
+                { role: "assistant", content: "Dein aktueller VDOT: 38.\nZiel-VDOT für 45 Min 10K: 46.\nDas sind +8 Punkte in 18 Wochen – machbar.\n\nDiese Woche: 28km, 80% Zone 2.\nMorgen: 8km @ 6:25/km (119-131 bpm).\nDonnerstag: 5x800m @ 5:10/km (143-155 bpm).\nSamstag: 12km Langer Lauf @ 6:50/km.\n\nDein Puls-Limit morgen: unter 131 bpm.\nBeim letzten Lauf warst du bei 148 – das war zu schnell für Zone 2." },
+              ]}
+            />
+          </div>
+
+          {/* Mobile: Stacked */}
+          <div className="md:hidden space-y-8">
+            <ChatMockup
+              type="generic"
+              delay={0}
+              messages={[
+                { role: "user", content: "Ich will einen 10K in 45 Min laufen" },
+                { role: "assistant", content: "Super Ziel! Hier sind einige allgemeine Tipps für dein 10K Training:\n1. Laufe 3-4 mal pro Woche\n2. Steigere dein Volumen langsam\n3. Mache Intervalltraining..." },
+              ]}
+            />
+            <ChatMockup
+              type="ascend"
+              delay={100}
+              messages={[
+                { role: "user", content: "Ich will einen 10K in 45 Min laufen" },
+                { role: "assistant", content: "Dein aktueller VDOT: 38.\nZiel-VDOT für 45 Min 10K: 46.\nDas sind +8 Punkte in 18 Wochen – machbar.\n\nDiese Woche: 28km, 80% Zone 2.\nMorgen: 8km @ 6:25/km (119-131 bpm).\nDonnerstag: 5x800m @ 5:10/km (143-155 bpm).\nSamstag: 12km Langer Lauf @ 6:50/km.\n\nDein Puls-Limit morgen: unter 131 bpm.\nBeim letzten Lauf warst du bei 148 – das war zu schnell für Zone 2." },
+              ]}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 4 – DREI KERNUNTERSCHIEDE
+      ══════════════════════════════════════════════════ */}
+      <section className="border-t border-[#1a1a1a] bg-[#0d0d0d] px-4 py-24">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-16 text-center">
+            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-white mb-4">
+              Die drei Kernunterschiede
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <KeyDifferenceCard
+              icon={Brain}
+              title="Herkömmliche KIs haben kein Gedächtnis."
+              text="Jedes Mal wenn du herkömmliche KIs nach deinem Training fragst, fängst du von vorne an. Kein Kontext, keine Historie, keine Entwicklung. Ascend erinnert sich an jeden Lauf, jeden Schmerz, jeden Fortschritt."
+              delay={0}
+            />
+            <KeyDifferenceCard
+              icon={Activity}
+              title="Herkömmliche KIs schätzen. Ascend berechnet."
+              text="Generische KI gibt dir Tipps aus dem Internet. Ascend berechnet deine persönlichen Herzfrequenzzonen nach Karvonen, deine Trainingspaces nach Jack Daniels VDOT und deine Belastungssteuerung nach ACWR. Das ist der Unterschied zwischen einem Google-Suchergebnis und einem echten Coach."
+              delay={130}
+            />
+            <KeyDifferenceCard
+              icon={AlertTriangle}
+              title="Herkömmliche KIs sagen dir was du hören willst."
+              text="Bittest du herkömmliche KIs um einen Marathon-Plan für nächsten Monat? Es erstellen dir einen. Ascend sagt dir: 'Das ist in 4 Wochen nicht machbar ohne Verletzungsrisiko. Ich empfehle 20 Wochen.' Ein echter Coach schützt dich vor dir selbst."
+              delay={260}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 5 – SOCIAL PROOF QUOTE
+      ══════════════════════════════════════════════════ */}
+      <section className="border-t border-[#1a1a1a] bg-[#0a0a0a] px-4 py-24">
+        <div className="mx-auto max-w-5xl">
+          <QuoteSection />
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 6 – SOCIAL PROOF
       ══════════════════════════════════════════════════ */}
       <section
         id="stats-section"
@@ -323,7 +502,7 @@ export default function LandingPage() {
       </section>
 
       {/* ══════════════════════════════════════════════════
-          SECTION 3 – FEATURES
+          SECTION 7 – FEATURES
       ══════════════════════════════════════════════════ */}
       <section className="border-t border-[#1a1a1a] px-4 py-24">
         <div className="mx-auto max-w-5xl">
@@ -359,7 +538,7 @@ export default function LandingPage() {
       </section>
 
       {/* ══════════════════════════════════════════════════
-          SECTION 4 – HOW IT WORKS
+          SECTION 8 – HOW IT WORKS
       ══════════════════════════════════════════════════ */}
       <section className="border-t border-[#1a1a1a] bg-[#0d0d0d] px-4 py-24">
         <div className="mx-auto max-w-5xl">
@@ -383,7 +562,7 @@ export default function LandingPage() {
       </section>
 
       {/* ══════════════════════════════════════════════════
-          SECTION 5 – CTA
+          SECTION 9 – CTA
       ══════════════════════════════════════════════════ */}
       <section className="border-t border-[#1a1a1a] px-4 pb-32 pt-24">
         <div className="mx-auto max-w-4xl">
@@ -426,6 +605,31 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ══════════════════════════════════════════════════
+          FOOTER
+      ══════════════════════════════════════════════════ */}
+      <footer className="border-t border-[#1a1a1a] bg-[#0a0a0a] px-4 py-8">
+        <div className="mx-auto max-w-5xl">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="flex items-center gap-6 text-[11px] font-bold uppercase tracking-widest text-[#444]">
+              <Link href="/impressum" className="transition-colors hover:text-[#e63228]">
+                Impressum
+              </Link>
+              <span className="h-3 w-px bg-[#2a2a2a]" />
+              <Link href="/datenschutz" className="transition-colors hover:text-[#e63228]">
+                Datenschutz
+              </Link>
+            </div>
+            <p className="text-xs text-[#555]">
+              © 2026 Ascend by PerformanceProtokoll
+            </p>
+            <p className="text-[10px] text-[#444] max-w-md">
+              Ascend ersetzt keine medizinische Beratung. Bei gesundheitlichen Fragen konsultiere bitte einen Arzt oder Physiotherapeuten.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

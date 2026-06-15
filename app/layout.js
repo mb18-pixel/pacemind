@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MainLayout from "@/components/MainLayout";
 import FeedbackWidget from "@/components/FeedbackWidget";
+import CookieBanner from "@/components/CookieBanner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,9 +17,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Ascend – KI-Laufcoach",
-  description:
-    "Ascend by PerformanceProtokoll – Dein KI-Laufcoach für smartes Training.",
+  title: "Ascend – Dein KI-Laufcoach | PerformanceProtokoll",
+  description: "Der kostenlose KI-Laufcoach der sich an dich erinnert. Wissenschaftlich fundierte Trainingspläne, persönlicher Coach-Chat und Wetterintegration. By PerformanceProtokoll.",
+  openGraph: {
+    title: "Ascend – KI-Laufcoach",
+    description: "Dein persönlicher KI-Laufcoach. Kostenlos. By PerformanceProtokoll.",
+    images: [
+      {
+        url: "/icons/icon-512.png",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({ children }) {
@@ -45,6 +54,7 @@ export default function RootLayout({ children }) {
         </MainLayout>
         <Footer />
         <FeedbackWidget />
+        <CookieBanner />
 
         <script
           dangerouslySetInnerHTML={{

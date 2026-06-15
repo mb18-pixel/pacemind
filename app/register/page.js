@@ -12,7 +12,39 @@ export default function RegisterPage() {
   const supabase = createClient();
   const [registrationComplete, setRegistrationComplete] = useState(false);
 
-  async function handleRegister({ email, password }) {
+  const BLOCKED_DOMAINS = [
+    'mailinator.com',
+    'tempmail.com',
+    'throwam.com',
+    'guerrillamail.com',
+    'sharklasers.com',
+    'yopmail.com',
+    '10minutemail.com',
+    'trashmail.com'
+  ];
+
+  async function handleRegister({ email, password, honeypot }) {
+    // Honeypot check - bots fill this field, humans don't
+    if (honeypot) {
+      // Bot detected - silently ignore
+      return;
+    }
+
+    // Time-based protection - prevent rapid registrations
+    const letzteRegistrierung = localStorage.getItem('lastRegister');
+    if (letzteRegistrierung) {
+      const diff = Date.now() - Number(letzteRegistrierung);
+      if (diff < 30000) { // 30 seconds
+        throw new Error('Bitte warte kurz vor der nächsten Registrierung.');
+      }
+    }
+
+    // Email domain blacklist - block disposable email domains
+    const emailDomain = email.split('@')[1]?.toLowerCase();
+    if (BLOCKED_DOMAINS.includes(emailDomain)) {
+      throw new Error('Bitte nutze eine echte E-Mail-Adresse.');
+    }
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -22,6 +54,9 @@ export default function RegisterPage() {
     });
 
     if (error) throw error;
+
+    // Store registration time after successful signup
+    localStorage.setItem('lastRegister', Date.now().toString());
 
     const { data: session } = await supabase.auth.getSession();
     if (session.session) {
@@ -89,6 +124,7 @@ export default function RegisterPage() {
       subtitle="Werde Teil der PerformanceProtokoll Community."
       submitLabel="Konto erstellen"
       onSubmit={handleRegister}
+      showHoneypot={true}
       footerLink={{
         text: "Bereits ein Konto?",
         label: "Anmelden",

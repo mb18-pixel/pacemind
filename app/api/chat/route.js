@@ -325,6 +325,45 @@ export async function POST(request) {
 
     const userId = user.id;
 
+    // Load complete profile with all fields
+    const { data: profil, error: profilError } = await supabase
+      .from('profiles')
+      .select(`
+        vorname,
+        alter_jahre,
+        geschlecht,
+        koerperfettanteil,
+        fitnesslevel,
+        hauptziel,
+        ziel_datum,
+        zielzeit,
+        zielpace,
+        zieldistanz,
+        aktuelle_trainingsfrequenz,
+        aktuelle_distanz,
+        referenzzeit_5k,
+        referenzzeit_10k,
+        trainingstage,
+        stadt,
+        latitude,
+        longitude,
+        makro_skelett,
+        onboarding_abgeschlossen,
+        nachrichten_heute,
+        nachrichten_reset_datum,
+        nachrichten_limit
+      `)
+      .eq('id', userId)
+      .single();
+
+    // Check if onboarding is completed
+    if (!profil?.onboarding_abgeschlossen) {
+      return Response.json({
+        reply: 'Bitte schließe zuerst das Onboarding ab.',
+        action: null
+      });
+    }
+
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) {
       return Response.json(
@@ -355,20 +394,11 @@ export async function POST(request) {
     }
 
     const heute = new Date().toISOString().split("T")[0];
-    const { data: profil, error: profilError } = await supabase
-      .from("profiles")
-      .select("nachrichten_heute, nachrichten_reset_datum, nachrichten_limit")
-      .eq("id", userId)
-      .maybeSingle();
-
-    if (profilError) {
-      throw profilError;
-    }
-
-    let profilNachrichten = profil || {
-      nachrichten_heute: 0,
-      nachrichten_reset_datum: heute,
-      nachrichten_limit: 20,
+    
+    let profilNachrichten = {
+      nachrichten_heute: profil?.nachrichten_heute || 0,
+      nachrichten_reset_datum: profil?.nachrichten_reset_datum || heute,
+      nachrichten_limit: profil?.nachrichten_limit || 20,
     };
 
     const letzterReset = profilNachrichten?.nachrichten_reset_datum;
@@ -416,9 +446,8 @@ export async function POST(request) {
         ? request.headers.get("x-simulated-date")
         : null;
 
-    const [runs, profile, trainingSlots] = await Promise.all([
+    const [runs, trainingSlots] = await Promise.all([
       getRecentRunsForContext(supabase, userId),
-      getProfileForUser(supabase, userId).catch(() => null),
       getTrainingSlots(supabase, userId).catch(() => []),
     ]);
 
@@ -441,8 +470,8 @@ export async function POST(request) {
       trainingPlan = await getTrainingPlan(supabase, userId, 14).catch(() => []);
     }
 
-    const weatherContext = profile
-      ? await getProfileWeatherContext(profile)
+    const weatherContext = profil
+      ? await getProfileWeatherContext(profil)
       : null;
 
     const extraContextPayload = await buildContextPayload(userId, supabase, {
@@ -456,7 +485,7 @@ export async function POST(request) {
 
     const systemInstruction = buildSystemPrompt(
       runs,
-      profile,
+      profil,
       weatherContext,
       trainingPlan,
       trainingSlots,

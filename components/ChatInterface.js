@@ -5,23 +5,39 @@ import { useRouter } from "next/navigation";
 import { Send, Mic } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
-const WELCOME =
+const DEFAULT_WELCOME =
   "Hallo! Schreib mir kurz, was du heute brauchst – ich passe deinen Trainingsplan an und beantworte Fragen zum Training.";
 
+const QUICK_REPLIES = [
+  "Was steht heute an?",
+  "Erkläre meinen Plan",
+  "Ich bin müde heute",
+];
+
 export const PLAN_UPDATED_EVENT = "ascend-plan-updated";
+
+function formatTime(date) {
+  return new Date(date).toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default function ChatInterface({ initialPrompt = null }) {
   const router = useRouter();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const [showQuickReplies, setShowQuickReplies] = useState(true);
   const [error, setError] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [supportsSpeech, setSupportsSpeech] = useState(null);
   const [actionFeedback, setActionFeedback] = useState(null);
   const [nachrichtenInfo, setNachrichtenInfo] = useState(null);
   const [limitReached, setLimitReached] = useState(false);
-  const bottomRef = useRef(null);
+  const [welcomeMessage, setWelcomeMessage] = useState(DEFAULT_WELCOME);
+  const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);
   const initialSent = useRef(false);
@@ -34,8 +50,53 @@ export default function ChatInterface({ initialPrompt = null }) {
   }, []);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+    let cancelled = false;
+
+    async function loadProfileAndCreateGreeting() {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) return;
+
+        const { data: profil } = await supabase
+          .from("profiles")
+          .select("vorname, hauptziel, ziel_datum")
+          .eq("id", user.id)
+          .single();
+
+        if (!cancelled && profil?.vorname) {
+          const stunde = new Date().getHours();
+          const tageszeit = stunde < 12 ? 'Morgen' : stunde < 18 ? 'Tag' : 'Abend';
+          
+          const istGesundheitsziel = ['gesund bleiben', 'abnehmen', 'fit bleiben'].includes(profil.hauptziel?.toLowerCase());
+          
+          const begruessung = `Guten ${tageszeit}, ${profil.vorname}! ${
+            profil.hauptziel && !istGesundheitsziel 
+              ? `Du trainierst für ${profil.hauptziel}${profil.ziel_datum ? ` am ${new Date(profil.ziel_datum).toLocaleDateString('de-DE')}` : ''}.` 
+              : 'Du trainierst für deine Gesundheit – das beste Ziel.'
+          }
+Was kann ich heute für dich tun?`;
+          
+          setWelcomeMessage(begruessung);
+        }
+      } catch (err) {
+        console.error("Fehler beim Laden des Profils für Begrüßung:", err);
+      }
+    }
+
+    loadProfileAndCreateGreeting();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,15 +149,28 @@ export default function ChatInterface({ initialPrompt = null }) {
     router.refresh();
   }, [router]);
 
+  const resetTextareaHeight = useCallback(() => {
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+    }
+  }, []);
+
   const sendMessage = useCallback(async (text) => {
-    if (!text.trim() || loading || limitReached) return;
+    if (!text.trim() || sending || limitReached) return;
 
     setError(null);
-    const userMessage = { role: "user", content: text.trim() };
+    setShowQuickReplies(false);
+    const userMessage = {
+      role: "user",
+      content: text.trim(),
+      timestamp: new Date(),
+    };
     const nextMessages = [...messages, userMessage];
     setMessages(nextMessages);
     setInput("");
-    setLoading(true);
+    resetTextareaHeight();
+    setSending(true);
+    setIsTyping(true);
 
     try {
       const res = await fetch("/api/chat", {
@@ -115,7 +189,11 @@ export default function ChatInterface({ initialPrompt = null }) {
 
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: data.reply },
+        {
+          role: "assistant",
+          content: data.reply,
+          timestamp: new Date(),
+        },
       ]);
 
       if (data.nachrichtenInfo) {
@@ -134,7 +212,6 @@ export default function ChatInterface({ initialPrompt = null }) {
         });
       }
 
-      // Visuelles Feedback nach Chat-Action
       if (data.actionExecuted) {
         setActionFeedback("✓ Kalender aktualisiert");
         setTimeout(() => setActionFeedback(""), 3000);
@@ -148,9 +225,10 @@ export default function ChatInterface({ initialPrompt = null }) {
       setMessages((prev) => prev.slice(0, -1));
       setInput(text);
     } finally {
-      setLoading(false);
+      setSending(false);
+      setIsTyping(false);
     }
-  }, [limitReached, loading, messages, notifyPlanUpdated]);
+  }, [limitReached, messages, notifyPlanUpdated, resetTextareaHeight, sending]);
 
   useEffect(() => {
     if (initialPrompt && !initialSent.current) {
@@ -159,13 +237,19 @@ export default function ChatInterface({ initialPrompt = null }) {
     }
   }, [initialPrompt, sendMessage]);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  async function handleSend(e) {
+    if (e) e.preventDefault();
     await sendMessage(input);
   }
 
+  function handleInputChange(e) {
+    setInput(e.target.value);
+    e.target.style.height = "auto";
+    e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
+  }
+
   function startRecording() {
-    if (loading || isRecording || limitReached) return;
+    if (sending || isRecording || limitReached) return;
 
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -200,7 +284,12 @@ export default function ChatInterface({ initialPrompt = null }) {
       if (transcript) {
         setInput(transcript);
         requestAnimationFrame(() => {
-          inputRef.current?.focus();
+          if (inputRef.current) {
+            inputRef.current.style.height = "auto";
+            inputRef.current.style.height =
+              Math.min(inputRef.current.scrollHeight, 120) + "px";
+            inputRef.current.focus();
+          }
         });
       }
       setIsRecording(false);
@@ -250,7 +339,13 @@ export default function ChatInterface({ initialPrompt = null }) {
       <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
         <div className="flex justify-start">
           <div className="max-w-[85%] rounded-md border border-border bg-surface-elevated px-4 py-3 sm:max-w-[75%]">
-            <p className="text-sm leading-relaxed text-text">{WELCOME}</p>
+            <p className="text-sm leading-relaxed text-text">{welcomeMessage}</p>
+            <span
+              className="mt-1 block text-[10px] text-[#444]"
+              style={{ marginTop: "4px" }}
+            >
+              {formatTime(new Date())}
+            </span>
           </div>
         </div>
 
@@ -267,22 +362,84 @@ export default function ChatInterface({ initialPrompt = null }) {
               }`}
             >
               <p className="whitespace-pre-wrap">{msg.content}</p>
+              <span
+                className="block text-[10px] text-[#444]"
+                style={{ marginTop: "4px" }}
+              >
+                {formatTime(msg.timestamp || new Date())}
+              </span>
             </div>
           </div>
         ))}
 
-        {loading && (
-          <div className="flex justify-start animate-slide-in-left">
-            <div className="rounded-md border border-border bg-surface-elevated px-4 py-3">
-              <span className="inline-flex gap-1 text-accent">
-                <span className="animate-bounce">●</span>
-                <span className="animate-bounce [animation-delay:0.15s]">●</span>
-                <span className="animate-bounce [animation-delay:0.3s]">●</span>
-              </span>
-            </div>
+        {isTyping && (
+          <div
+            style={{
+              display: "flex",
+              gap: "4px",
+              padding: "12px 16px",
+              alignItems: "center",
+            }}
+          >
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                style={{
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  background: "#e63228",
+                  animation: "typing 1.2s infinite",
+                  animationDelay: `${i * 0.2}s`,
+                  opacity: 0.7,
+                }}
+              />
+            ))}
           </div>
         )}
-        <div ref={bottomRef} />
+
+        {showQuickReplies && messages.length <= 1 && (
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              flexWrap: "wrap",
+              padding: "0 16px 12px",
+            }}
+          >
+            {QUICK_REPLIES.map((reply) => (
+              <button
+                key={reply}
+                type="button"
+                onClick={() => {
+                  setInput(reply);
+                  setShowQuickReplies(false);
+                  requestAnimationFrame(() => {
+                    if (inputRef.current) {
+                      inputRef.current.style.height = "auto";
+                      inputRef.current.style.height =
+                        Math.min(inputRef.current.scrollHeight, 120) + "px";
+                      inputRef.current.focus();
+                    }
+                  });
+                }}
+                style={{
+                  background: "#1a1a1a",
+                  border: "1px solid #333",
+                  borderRadius: "20px",
+                  color: "#fff",
+                  padding: "8px 14px",
+                  fontSize: "13px",
+                  cursor: "pointer",
+                }}
+              >
+                {reply}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
       </div>
 
       {error && (
@@ -304,23 +461,39 @@ export default function ChatInterface({ initialPrompt = null }) {
       )}
 
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSend}
         className="flex gap-2 border-t border-border p-4"
       >
-        <input
+        <textarea
           data-tutorial="chat-input"
           ref={inputRef}
-          type="text"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder={limitReached ? "Limit erreicht · Reset um Mitternacht" : "Frage deinen Laufcoach …"}
-          disabled={loading || limitReached}
+          onChange={handleInputChange}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSend();
+            }
+          }}
+          placeholder={
+            limitReached
+              ? "Limit erreicht · Reset um Mitternacht"
+              : "Schreib deinem Coach..."
+          }
+          disabled={sending || limitReached}
+          rows={1}
           className="input-field flex-1"
+          style={{
+            resize: "none",
+            overflow: "hidden",
+            minHeight: "44px",
+            maxHeight: "120px",
+          }}
         />
         <button
           type="button"
           onClick={startRecording}
-          disabled={loading || isRecording || !supportsSpeech || limitReached}
+          disabled={sending || isRecording || !supportsSpeech || limitReached}
           title={
             limitReached
               ? "Limit erreicht · Reset um Mitternacht"
@@ -355,7 +528,7 @@ export default function ChatInterface({ initialPrompt = null }) {
         </button>
         <button
           type="submit"
-          disabled={loading || limitReached || !input.trim()}
+          disabled={sending || limitReached || !input.trim()}
           className="btn-primary flex items-center gap-2 px-5"
         >
           <Send size={18} strokeWidth={2.5} />

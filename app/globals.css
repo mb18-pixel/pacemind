@@ -89,6 +89,19 @@ body {
   }
 }
 
+@keyframes typing {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
 .animate-fade-up {
   animation: fade-up 0.5s ease-out forwards;
 }
@@ -143,11 +156,11 @@ body {
 }
 
 .animate-slide-forward {
-  animation: slide-in-forward 0.35s ease-out forwards;
+  animation: slide-in-forward 0.3s ease-in-out forwards;
 }
 
 .animate-slide-back {
-  animation: slide-in-back 0.35s ease-out forwards;
+  animation: slide-in-back 0.3s ease-in-out forwards;
 }
 
 .btn-primary {

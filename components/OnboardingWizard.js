@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -10,8 +10,10 @@ import {
   Target,
   Sparkles,
 } from "lucide-react";
+import confetti from "canvas-confetti";
+import { createClient } from "@/lib/supabase/client";
 
-const TOTAL_STEPS = 12;
+const TOTAL_STEPS = 13;
 
 const WOCHENTAGE = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
@@ -52,8 +54,8 @@ const FITNESS_OPTIONS = [
 ];
 
 const ZIEL_OPTIONS = [
-  { value: "5k", title: "5K", subtext: "3,1 km", category: "wettkampf" },
-  { value: "10k", title: "10K", subtext: "6,2 km", category: "wettkampf" },
+  { value: "5k", title: "5K", subtext: "5 km", category: "wettkampf" },
+  { value: "10k", title: "10K", subtext: "10 km", category: "wettkampf" },
   { value: "halbmarathon", title: "Halbmarathon", subtext: "21,1 km", category: "wettkampf" },
   { value: "marathon", title: "Marathon", subtext: "42,2 km", category: "wettkampf" },
   { value: "ultramarathon", title: "Ultramarathon", subtext: "50km+", category: "wettkampf" },
@@ -92,17 +94,30 @@ const initialForm = {
 };
 
 const VDOT_MAPPING = {
-  marathon: {
-    28: "5:30:00", 35: "4:22:00", 40: "3:49:00", 42: "3:38:00", 46: "3:22:00", 50: "3:07:00", 55: "2:52:00", 60: "2:38:00"
+  '5k': {
+    28: '32:00', 32: '28:30', 35: '25:30',
+    38: '23:30', 40: '22:30', 42: '21:30',
+    46: '19:30', 50: '18:00', 55: '16:30', 60: '15:10'
+  },
+  '10k': {
+    28: '1:08:00', 32: '59:30', 35: '54:00',
+    38: '49:30', 40: '47:30', 42: '45:30',
+    46: '42:00', 50: '38:30', 55: '35:30', 60: '32:30'
   },
   halbmarathon: {
-    28: "2:35:00", 35: "2:03:00", 40: "1:47:00", 42: "1:42:00", 46: "1:34:00", 50: "1:27:00"
+    28: '2:35:00', 32: '2:16:00', 35: '2:03:00',
+    38: '1:54:00', 40: '1:47:00', 42: '1:42:00',
+    46: '1:34:00', 50: '1:27:00', 55: '1:20:00', 60: '1:13:00'
   },
-  "10k": {
-    28: "1:08:00", 35: "54:00", 40: "47:30", 42: "45:30", 46: "42:00", 50: "38:30"
+  marathon: {
+    28: '5:30:00', 32: '4:49:00', 35: '4:22:00',
+    38: '4:00:00', 40: '3:49:00', 42: '3:38:00',
+    46: '3:22:00', 50: '3:07:00', 55: '2:52:00', 60: '2:38:00'
   },
-  "5k": {
-    28: "32:00", 35: "25:30", 40: "22:30", 42: "21:30", 46: "19:30", 50: "18:00"
+  ultramarathon: {
+    28: '7:00:00', 32: '6:10:00', 35: '5:35:00',
+    38: '5:10:00', 40: '4:55:00', 42: '4:40:00',
+    46: '4:20:00', 50: '4:00:00', 55: '3:40:00', 60: '3:22:00'
   }
 };
 
@@ -145,15 +160,24 @@ function calculateImprovement(weeks) {
   return 10;
 }
 
-function getZielzeit(vdot, ziel) {
-  const mapping = VDOT_MAPPING[ziel];
-  if (!mapping) return null;
-  const keys = Object.keys(mapping).map(Number).sort((a,b) => a-b);
-  let closest = keys[0];
-  for (let k of keys) {
-    if (Math.abs(k - vdot) < Math.abs(closest - vdot)) closest = k;
-  }
-  return mapping[closest];
+function getZielzeit(vdot, distanz) {
+  const distanzKey = distanz?.toLowerCase()
+    .replace('halbmarathon', 'halbmarathon')
+    .replace('marathon', 'marathon')
+    .replace('5k', '5k')
+    .replace('10k', '10k')
+    .replace('ultramarathon', 'ultramarathon');
+  
+  const zeiten = VDOT_MAPPING[distanzKey];
+  if (!zeiten) return null;
+  
+  // Finde nächsten VDOT-Wert
+  const vdotWerte = Object.keys(zeiten).map(Number).sort((a,b) => a-b);
+  const naechsterVdot = vdotWerte.reduce((prev, curr) => 
+    Math.abs(curr - vdot) < Math.abs(prev - vdot) ? curr : prev
+  );
+  
+  return zeiten[naechsterVdot];
 }
 
 export default function OnboardingWizard() {
@@ -169,11 +193,31 @@ export default function OnboardingWizard() {
   const [customGoalMode, setCustomGoalMode] = useState(false);
   const [customKfaMode, setCustomKfaMode] = useState(false);
   const [referenzzeitFehler, setReferenzzeitFehler] = useState("");
+  const confettiTriggered = useRef(false);
 
-  const progress = (step / TOTAL_STEPS) * 100;
+  // Calculate total steps based on goal type
+  const healthGoals = ["gesund bleiben", "abnehmen", "fit bleiben"];
+  const totalSteps = healthGoals.includes(form.ziel) ? 7 : TOTAL_STEPS;
+  const progress = (step / totalSteps) * 100;
+
+  // Trigger confetti on welcome step
+  useEffect(() => {
+    if (step === totalSteps && !confettiTriggered.current) {
+      confettiTriggered.current = true;
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#e63228', '#ffffff', '#ff6b6b'],
+        disableForReducedMotion: true,
+      });
+    }
+  }, [step, totalSteps]);
 
   const updateForm = useCallback((patch) => {
     setForm((prev) => ({ ...prev, ...patch }));
+    // Clear error when user starts typing
+    setError(null);
   }, []);
 
   function validiereReferenzzeit(wert) {
@@ -225,6 +269,45 @@ export default function OnboardingWizard() {
     return () => clearTimeout(timer);
   }, [form.stadtQuery, step]);
 
+  useEffect(() => {
+    if (step !== 9 || form.zielzeit || customGoalMode) return;
+
+    let computedVdot = 35;
+    if (form.referenzzeit) {
+      computedVdot = getVdotFromReference(form.referenzdistanz, form.referenzzeit);
+    } else {
+      computedVdot = estimateVDOT(form.aktuelleTrainingsfrequenz, form.fitnesslevel);
+    }
+
+    let weeks = 8;
+    if (form.zielDatum) {
+      const diffTime = Math.abs(new Date(form.zielDatum) - new Date());
+      weeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+    }
+
+    const improvement = calculateImprovement(weeks);
+    const targetVdot = computedVdot + improvement;
+    const goalDist = ["5k", "10k", "halbmarathon", "marathon"].includes(form.ziel)
+      ? form.ziel
+      : "5k";
+    const calcTime = getZielzeit(targetVdot, goalDist);
+
+    if (calcTime) {
+      updateForm({ zielzeit: calcTime, zielzeitBerechnet: true });
+    }
+  }, [
+    step,
+    form.zielzeit,
+    customGoalMode,
+    form.referenzzeit,
+    form.referenzdistanz,
+    form.aktuelleTrainingsfrequenz,
+    form.fitnesslevel,
+    form.zielDatum,
+    form.ziel,
+    updateForm,
+  ]);
+
   function selectCity(place) {
     const land =
       place.country || place.country_code || place.admin1 || "";
@@ -239,8 +322,7 @@ export default function OnboardingWizard() {
     setSuggestions([]);
   }
 
-  function validateStep() {
-    setError(null);
+  function getStepError() {
     const healthGoals = ["gesund bleiben", "abnehmen", "fit bleiben"];
     switch (step) {
       case 1:
@@ -308,6 +390,15 @@ export default function OnboardingWizard() {
       default:
         return null;
     }
+  }
+
+  function validateStep() {
+    setError(null);
+    return getStepError();
+  }
+
+  function isStepValid() {
+    return getStepError() === null;
   }
 
   function goNext() {
@@ -393,13 +484,100 @@ export default function OnboardingWizard() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Speichern fehlgeschlagen");
 
-      router.push("/chat");
-      router.refresh();
+      setSaving(false);
+      setStep(totalSteps); // Move to welcome step with confetti
     } catch (err) {
       setError(err.message);
-    } finally {
       setSaving(false);
     }
+  }
+
+  async function handleTrainingStarten() {
+    console.log('Onboarding Daten:', form);
+    
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      console.error('Kein User gefunden');
+      return;
+    }
+
+    // Map referenzzeit to the correct field based on referenzdistanz
+    let referenzzeit_5k = null;
+    let referenzzeit_10k = null;
+    if (form.referenzdistanz === '5k' && form.referenzzeit) {
+      referenzzeit_5k = form.referenzzeit;
+    } else if (form.referenzdistanz === '10k' && form.referenzzeit) {
+      referenzzeit_10k = form.referenzzeit;
+    }
+
+    // Alle Onboarding-Daten auf einmal speichern:
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        vorname: form.vorname || null,
+        geschlecht: form.geschlecht || null,
+        alter_jahre: form.alterJahre ? parseInt(form.alterJahre) : null,
+        koerperfettanteil: form.koerperfettanteil 
+          ? parseFloat(form.koerperfettanteil) : null,
+        fitnesslevel: form.fitnesslevel || null,
+        hauptziel: form.ziel || null,
+        ziel_datum: form.zielDatum || null,
+        zielzeit: form.zielzeit || null,
+        zielpace: form.zielPace || null,
+        zieldistanz: form.zielDistanz || null,
+        aktuelle_trainingsfrequenz: form.aktuelleTrainingsfrequenz || null,
+        aktuelle_distanz: form.aktuelleDistanz || null,
+        referenzzeit_5k: referenzzeit_5k || null,
+        referenzzeit_10k: referenzzeit_10k || null,
+        stadt: form.stadt || null,
+        latitude: form.latitude ? parseFloat(form.latitude) : null,
+        longitude: form.longitude ? parseFloat(form.longitude) : null,
+        trainingstage: form.slots ? form.slots.filter(s => s.verfuegbar).length : null,
+        onboarding_abgeschlossen: true,
+      })
+      .eq('id', user.id);
+
+    if (error) {
+      console.error('Supabase Error:', error);
+      alert('Fehler beim Speichern. Bitte versuche es erneut.');
+      return;
+    }
+
+    console.log('Profil gespeichert:', form);
+    
+    // Zeitslots separat speichern:
+    const verfuegbareSlots = form.slots.filter(s => s.verfuegbar && s.uhrzeit_start && s.uhrzeit_ende);
+    if (verfuegbareSlots.length > 0) {
+      // Erst alle alten Slots löschen:
+      await supabase
+        .from('training_slots')
+        .delete()
+        .eq('user_id', user.id);
+      
+      // Neue Slots einfügen:
+      const slotData = verfuegbareSlots.map(slot => ({
+        user_id: user.id,
+        wochentag: slot.wochentag,
+        wochentag_name: WOCHENTAGE[slot.wochentag],
+        verfuegbar: true,
+        uhrzeit_start: slot.uhrzeit_start,
+        uhrzeit_ende: slot.uhrzeit_ende
+      }));
+      
+      const { error: slotsError } = await supabase
+        .from('training_slots')
+        .insert(slotData);
+      
+      if (slotsError) {
+        console.error('Fehler beim Speichern der Zeitslots:', slotsError);
+      }
+    }
+
+    // Zur Chat-Seite navigieren:
+    router.push('/chat');
+    router.refresh();
   }
 
   function renderStep() {
@@ -641,10 +819,10 @@ export default function OnboardingWizard() {
                   key={opt.value}
                   type="button"
                   onClick={() => updateForm({ fitnesslevel: opt.value })}
-                  className={`w-full rounded-md border p-5 text-left transition-all ${
+                  className={`w-full rounded-md border p-5 text-left transition-all duration-200 ${
                     form.fitnesslevel === opt.value
-                      ? "border-accent bg-accent/15 shadow-[0_0_20px_rgba(230,50,40,0.2)]"
-                      : "border-border bg-surface hover:border-accent/40"
+                      ? "border-accent bg-accent/15 shadow-[0_0_20px_rgba(230,50,40,0.3)] scale-[1.02]"
+                      : "border-border bg-surface hover:border-accent/40 hover:shadow-[0_0_15px_rgba(230,50,40,0.15)] hover:scale-[1.01] active:scale-[0.98]"
                   }`}
                 >
                   <p className="font-extrabold uppercase tracking-tight text-text">
@@ -678,10 +856,10 @@ export default function OnboardingWizard() {
                     key={opt.value}
                     type="button"
                     onClick={() => updateForm({ ziel: opt.value })}
-                    className={`rounded-md border p-4 text-left transition-all ${
+                    className={`rounded-md border p-4 text-left transition-all duration-200 ${
                       form.ziel === opt.value
-                        ? "border-accent bg-accent/15 shadow-[0_0_20px_rgba(230,50,40,0.2)]"
-                        : "border-border bg-surface hover:border-accent/40"
+                        ? "border-accent bg-accent/15 shadow-[0_0_20px_rgba(230,50,40,0.3)] scale-[1.02]"
+                        : "border-border bg-surface hover:border-accent/40 hover:shadow-[0_0_15px_rgba(230,50,40,0.15)] hover:scale-[1.01] active:scale-[0.98]"
                     }`}
                   >
                     <p className="font-extrabold uppercase tracking-tight text-text">
@@ -709,10 +887,10 @@ export default function OnboardingWizard() {
                     key={opt.value}
                     type="button"
                     onClick={() => updateForm({ ziel: opt.value })}
-                    className={`rounded-md border p-4 text-left transition-all ${
+                    className={`rounded-md border p-4 text-left transition-all duration-200 ${
                       form.ziel === opt.value
-                        ? "border-accent bg-accent/15 shadow-[0_0_20px_rgba(230,50,40,0.2)]"
-                        : "border-border bg-surface hover:border-accent/40"
+                        ? "border-accent bg-accent/15 shadow-[0_0_20px_rgba(230,50,40,0.3)] scale-[1.02]"
+                        : "border-border bg-surface hover:border-accent/40 hover:shadow-[0_0_15px_rgba(230,50,40,0.15)] hover:scale-[1.01] active:scale-[0.98]"
                     }`}
                   >
                     <p className="font-extrabold uppercase tracking-tight text-text">
@@ -902,11 +1080,6 @@ export default function OnboardingWizard() {
         // Ensure we calculate time based on goal if it matches
         const goalDist = ["5k", "10k", "halbmarathon", "marathon"].includes(form.ziel) ? form.ziel : "5k";
         let calcTime = getZielzeit(targetVdot, goalDist);
-        
-        // Init target time only if not set
-        if (!form.zielzeit && calcTime && !customGoalMode) {
-          setTimeout(() => updateForm({ zielzeit: calcTime, zielzeitBerechnet: true }), 0);
-        }
 
         return (
           <div className="space-y-5">
@@ -918,7 +1091,7 @@ export default function OnboardingWizard() {
             </div>
             <div className="rounded-xl border border-border bg-surface-elevated p-6 text-center shadow-lg">
               <p className="text-sm font-bold uppercase tracking-widest text-text-muted mb-2">
-                Berechnete Zielzeit ({goalDist})
+                Realistische Zielzeit für {goalDist === '5k' ? '5K' : goalDist === '10k' ? '10K' : goalDist.charAt(0).toUpperCase() + goalDist.slice(1)}:
               </p>
               {customGoalMode ? (
                 <input
@@ -931,7 +1104,7 @@ export default function OnboardingWizard() {
                 />
               ) : (
                 <div className="text-4xl font-black text-white mb-6">
-                  {form.zielzeit || calcTime}
+                  🎯 {form.zielzeit || calcTime}
                 </div>
               )}
 
@@ -1090,16 +1263,16 @@ export default function OnboardingWizard() {
       case 12:
         return (
           <div className="flex flex-col items-center py-8 text-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-md bg-accent/15 shadow-[0_0_40px_rgba(230,50,40,0.3)]">
-              <Sparkles size={40} className="text-accent" strokeWidth={2} />
+            <div className="flex h-24 w-24 items-center justify-center rounded-full bg-accent/20 shadow-[0_0_60px_rgba(230,50,40,0.4)] animate-pulse">
+              <Sparkles size={48} className="text-accent" strokeWidth={2.5} />
             </div>
-            <p className="mt-6 text-xs font-bold uppercase tracking-widest text-accent">
+            <p className="mt-8 text-xs font-bold uppercase tracking-widest text-accent">
               PerformanceProtokoll
             </p>
-            <h2 className="mt-2 text-3xl font-extrabold uppercase tracking-tight text-text sm:text-4xl">
+            <h1 className="mt-4 text-4xl font-black uppercase tracking-tight text-white sm:text-5xl md:text-6xl">
               Willkommen, {form.vorname}!
-            </h2>
-            <p className="mt-4 text-lg text-text-muted">
+            </h1>
+            <p className="mt-6 text-xl text-text-muted">
               Dein Coach ist bereit.
             </p>
           </div>
@@ -1114,16 +1287,12 @@ export default function OnboardingWizard() {
     <div className="flex min-h-[calc(100vh-5rem)] flex-col">
       <div className="h-1 w-full bg-surface">
         <div
-          className="h-full bg-accent transition-all duration-500 ease-out"
+          className="h-full bg-accent transition-all duration-300 ease-in-out"
           style={{ width: `${progress}%` }}
         />
       </div>
 
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-8">
-        <p className="text-xs font-bold uppercase tracking-widest text-text-muted">
-          Schritt {step} von {TOTAL_STEPS}
-        </p>
-
         <div
           key={step}
           className={
@@ -1146,7 +1315,7 @@ export default function OnboardingWizard() {
             <button
               type="button"
               onClick={goBack}
-              className="btn-secondary flex items-center gap-2"
+              className="flex items-center gap-2 rounded-md border border-border bg-transparent px-6 py-3 text-sm font-bold uppercase tracking-wide text-text transition-all duration-200 hover:border-accent hover:text-white active:scale-[0.98]"
             >
               <ArrowLeft size={18} />
               Zurück
@@ -1155,13 +1324,27 @@ export default function OnboardingWizard() {
             <div />
           )}
 
-          {step < TOTAL_STEPS ? (
+          {step < totalSteps ? (
             <button
               type="button"
               onClick={goNext}
-              className="btn-primary ml-auto flex items-center gap-2"
+              disabled={!isStepValid()}
+              className={`ml-auto flex items-center gap-2 rounded-md px-6 py-3 text-sm font-bold uppercase tracking-wide transition-all duration-200 ${
+                isStepValid()
+                  ? "bg-accent text-white hover:shadow-[0_0_20px_rgba(230,50,40,0.5)] hover:shadow-[0_0_40px_rgba(230,50,40,0.2)] hover:scale-[1.02] active:scale-[0.98]"
+                  : "bg-[#333] text-[#666] cursor-not-allowed opacity-50"
+              }`}
             >
               Weiter
+              <ArrowRight size={18} />
+            </button>
+          ) : step === totalSteps ? (
+            <button
+              type="button"
+              onClick={handleTrainingStarten}
+              className="btn-primary ml-auto flex items-center gap-2"
+            >
+              Training starten →
               <ArrowRight size={18} />
             </button>
           ) : (
@@ -1171,8 +1354,20 @@ export default function OnboardingWizard() {
               disabled={saving}
               className="btn-primary ml-auto flex items-center gap-2"
             >
-              {saving ? "Speichern …" : "Training starten"}
-              <ArrowRight size={18} />
+              {saving ? (
+                <>
+                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Speichern …
+                </>
+              ) : (
+                <>
+                  Training starten
+                  <ArrowRight size={18} />
+                </>
+              )}
             </button>
           )}
         </div>
