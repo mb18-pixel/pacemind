@@ -401,14 +401,18 @@ export default function OnboardingWizard() {
     return getStepError() === null;
   }
 
-  function goNext() {
+  function goNext(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     const err = validateStep();
     if (err) {
       setError(err);
       return;
     }
     setSlideDir("forward");
-    
+
     // Skip goal input steps for health goals
     const healthGoals = ["gesund bleiben", "abnehmen", "fit bleiben"];
     if (step === 4 && healthGoals.includes(form.ziel)) {
@@ -416,7 +420,7 @@ export default function OnboardingWizard() {
       setStep(10);
       return;
     }
-    
+
     setStep((s) => Math.min(s + 1, TOTAL_STEPS));
   }
 
@@ -1328,7 +1332,18 @@ export default function OnboardingWizard() {
             <button
               type="button"
               onClick={goNext}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                goNext(e);
+              }}
               disabled={!isStepValid()}
+              style={{
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+                cursor: 'pointer',
+                minHeight: '48px',
+                minWidth: '48px'
+              }}
               className={`ml-auto flex items-center gap-2 rounded-md px-6 py-3 text-sm font-bold uppercase tracking-wide transition-all duration-200 ${
                 isStepValid()
                   ? "bg-accent text-white hover:shadow-[0_0_20px_rgba(230,50,40,0.5)] hover:shadow-[0_0_40px_rgba(230,50,40,0.2)] hover:scale-[1.02] active:scale-[0.98]"
