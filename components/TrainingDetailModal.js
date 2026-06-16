@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { X, CheckCircle, XCircle, Edit3, MapPin, Clock, Target } from "lucide-react";
 import {
   LineChart,
@@ -41,6 +41,35 @@ export default function TrainingDetailModal({
   onLogRun,
 }) {
   if (!open || !trainingEntry) return null;
+
+  const sheetRef = useRef(null);
+  const startY = useRef(0);
+  const currentY = useRef(0);
+
+  // Swipe down to close
+  const handleTouchStart = (e) => {
+    startY.current = e.touches[0].clientY;
+    currentY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e) => {
+    currentY.current = e.touches[0].clientY;
+    const deltaY = currentY.current - startY.current;
+    
+    if (deltaY > 0 && sheetRef.current) {
+      sheetRef.current.style.transform = `translateY(${deltaY}px)`;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    const deltaY = currentY.current - startY.current;
+    
+    if (deltaY > 100) {
+      onClose();
+    } else if (sheetRef.current) {
+      sheetRef.current.style.transform = 'translateY(0)';
+    }
+  };
 
   const isCompleted = trainingEntry.status === "abgeschlossen" || completedRun !== null;
   const isSkipped = trainingEntry.status === "uebersprungen";
@@ -345,10 +374,19 @@ export default function TrainingDetailModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-surface border border-border shadow-2xl">
+    <div className="modal-overlay" onClick={onClose}>
+      <div
+        ref={sheetRef}
+        className="bottom-sheet"
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div className="bottom-sheet-handle" />
+        
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-start justify-between bg-surface pb-4 border-b border-border">
+        <div className="sticky top-0 z-10 flex items-start justify-between bg-surface pb-4 border-b border-border px-4 md:px-6">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-text-muted">
               {formatDate(trainingEntry.datum)}
@@ -374,13 +412,13 @@ export default function TrainingDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-border bg-bg p-2 text-text-muted hover:text-text transition-colors"
+            className="touch-target rounded-md border border-border bg-bg p-2 text-text-muted hover:text-text transition-colors"
           >
             <X size={20} />
           </button>
         </div>
 
-        <div className="p-6 space-y-8">
+        <div className="p-4 md:p-6 space-y-8">
           {/* SECTION 1: OVERVIEW (3 Stat Cards) */}
           <section>
             <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-text-muted flex items-center gap-2">
@@ -648,14 +686,14 @@ export default function TrainingDetailModal({
           </section>
 
           {/* SECTION 5: ACTIONS */}
-          <section className="sticky bottom-0 bg-surface pt-4 border-t border-border">
+          <section className="sticky bottom-0 bg-surface pt-4 border-t border-border px-4 md:px-6">
             <div className="grid grid-cols-3 gap-3">
               {/* Complete button */}
               <button
                 type="button"
                 onClick={() => onComplete?.()}
                 disabled={isCompleted || isSkipped}
-                className={`flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-bold transition-all ${
+                className={`touch-target flex items-center justify-center gap-2 rounded-lg px-2 py-3 text-sm font-bold transition-all ${
                   isCompleted
                     ? "bg-green-500/20 text-green-500 border border-green-500/30 cursor-default"
                     : isSkipped
@@ -664,7 +702,8 @@ export default function TrainingDetailModal({
                 }`}
               >
                 <CheckCircle size={16} />
-                Abgeschlossen
+                <span className="hidden sm:inline">Abgeschlossen</span>
+                <span className="sm:hidden">✓</span>
               </button>
 
               {/* Skip button */}
@@ -672,7 +711,7 @@ export default function TrainingDetailModal({
                 type="button"
                 onClick={() => onSkip?.()}
                 disabled={isCompleted || isSkipped}
-                className={`flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-bold transition-all ${
+                className={`touch-target flex items-center justify-center gap-2 rounded-lg px-2 py-3 text-sm font-bold transition-all ${
                   isSkipped
                     ? "bg-red-500/20 text-red-500 border border-red-500/30 cursor-default"
                     : isCompleted
@@ -681,7 +720,8 @@ export default function TrainingDetailModal({
                 }`}
               >
                 <XCircle size={16} />
-                Überspringen
+                <span className="hidden sm:inline">Überspringen</span>
+                <span className="sm:hidden">✗</span>
               </button>
 
               {/* Log run button */}
@@ -689,14 +729,15 @@ export default function TrainingDetailModal({
                 type="button"
                 onClick={() => onLogRun?.()}
                 disabled={Boolean(completedRun) || isSkipped}
-                className={`flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-bold transition-all ${
+                className={`touch-target flex items-center justify-center gap-2 rounded-lg px-2 py-3 text-sm font-bold transition-all ${
                   Boolean(completedRun) || isSkipped
                     ? "bg-bg text-text-muted border border-border cursor-not-allowed"
                     : "bg-blue-500 text-white hover:bg-blue-600 shadow-lg shadow-blue-500/20"
                 }`}
               >
                 <Edit3 size={16} />
-                Lauf eintragen
+                <span className="hidden sm:inline">Lauf eintragen</span>
+                <span className="sm:hidden">+</span>
               </button>
             </div>
           </section>

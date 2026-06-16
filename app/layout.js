@@ -37,6 +37,10 @@ export default function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+        />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#e63228" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -47,7 +51,7 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-title" content="Ascend" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className="flex min-h-full flex-col bg-bg font-sans text-text">
+      <body className="app-body flex min-h-full flex-col bg-bg font-sans text-text">
         <Navbar />
         <MainLayout>
           {children}

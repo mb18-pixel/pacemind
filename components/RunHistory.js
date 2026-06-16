@@ -2,6 +2,7 @@
 
 import { formatPace } from "@/lib/runs";
 import { Footprints, Heart, Trash2 } from "lucide-react";
+import { ShareRunButton } from "@/components/RunShareCard";
 
 export default function RunHistory({ runs, onDelete }) {
   if (runs.length === 0) {
@@ -57,14 +58,17 @@ export default function RunHistory({ runs, onDelete }) {
                 <p className="text-sm italic text-text-muted">{run.notes}</p>
               )}
             </div>
-            <button
-              type="button"
-              onClick={() => onDelete(run.id)}
-              className="flex items-center gap-1.5 self-start rounded-md px-3 py-2 text-xs font-bold uppercase tracking-wide text-text-muted transition-colors hover:bg-accent/10 hover:text-accent sm:self-center"
-            >
-              <Trash2 size={14} />
-              Löschen
-            </button>
+            <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
+              <ShareRunButton run={run} />
+              <button
+                type="button"
+                onClick={() => onDelete(run.id)}
+                className="flex min-h-[44px] min-w-[44px] items-center gap-1.5 rounded-md px-3 py-2 text-xs font-bold uppercase tracking-wide text-text-muted transition-colors hover:bg-accent/10 hover:text-accent"
+              >
+                <Trash2 size={14} />
+                Löschen
+              </button>
+            </div>
           </li>
         );
       })}

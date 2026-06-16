@@ -28,6 +28,7 @@ body {
   background: #0a0a0a;
   color: #ffffff;
   font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-size: clamp(14px, 3vw, 16px);
 }
 
 ::-webkit-scrollbar {
@@ -164,7 +165,7 @@ body {
 }
 
 .btn-primary {
-  @apply rounded-md bg-accent px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition-all duration-200;
+  @apply rounded-md bg-accent px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition-all duration-200 min-h-[44px] touch-target;
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -177,7 +178,7 @@ body {
 }
 
 .btn-secondary {
-  @apply rounded-md border border-border bg-surface px-6 py-3 text-sm font-bold uppercase tracking-wide text-text transition-all duration-200;
+  @apply rounded-md border border-border bg-surface px-6 py-3 text-sm font-bold uppercase tracking-wide text-text transition-all duration-200 min-h-[44px] touch-target;
 }
 
 .btn-secondary:hover {
@@ -186,7 +187,7 @@ body {
 }
 
 .input-field {
-  @apply w-full rounded-md border border-border bg-surface px-4 py-3 text-text placeholder:text-text-muted transition-all duration-200;
+  @apply w-full rounded-md border border-border bg-surface px-4 py-3 text-text placeholder:text-text-muted transition-all duration-200 min-h-[44px];
 }
 
 .input-field:focus {
@@ -210,4 +211,252 @@ body {
   transform: translateY(-2px);
   border-color: #e63228;
   box-shadow: 0 4px 20px rgba(230, 50, 40, 0.15);
+}
+
+/* ── Mobile typography ── */
+.page-title {
+  font-size: clamp(28px, 6vw, 48px);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+.page-subtitle {
+  font-size: clamp(14px, 3vw, 16px);
+  color: #888888;
+}
+
+h1, .h1 {
+  font-size: clamp(28px, 6vw, 48px);
+}
+
+h2, .h2 {
+  font-size: clamp(20px, 4vw, 32px);
+}
+
+/* ── Page containers ── */
+.page-container {
+  max-width: 100vw;
+  overflow-x: hidden;
+  padding: 16px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+  .page-container {
+    padding: 32px 16px;
+  }
+}
+
+.has-bottom-nav {
+  padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 768px) {
+  .has-bottom-nav {
+    padding-bottom: 32px;
+  }
+}
+
+.app-body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  min-height: calc(var(--vh, 1vh) * 100);
+}
+
+/* ── Touch targets ── */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* ── Bottom navigation (mobile) ── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  height: calc(60px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: #0a0a0a;
+  border-top: 1px solid #222222;
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #888888;
+  transition: color 0.2s;
+}
+
+.bottom-nav-item-active {
+  color: #e63228;
+}
+
+/* ── Calendar horizontal scroll ── */
+.calendar-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.calendar-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.calendar-scroll-inner {
+  display: flex;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+
+.calendar-day-card {
+  scroll-snap-align: start;
+}
+
+/* ── Chat mobile layout ── */
+.chat-page-main {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0 !important;
+}
+
+.chat-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 767px) {
+  .chat-shell {
+    height: calc(var(--vh, 1vh) * 100 - 56px - 60px - env(safe-area-inset-bottom, 0px));
+    max-height: calc(var(--vh, 1vh) * 100 - 56px - 60px - env(safe-area-inset-bottom, 0px));
+  }
+
+  .chat-messages {
+    padding-bottom: 80px;
+  }
+
+  .chat-input-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    z-index: 40;
+    background: #111111;
+    border-top: 1px solid #222222;
+  }
+}
+
+@media (min-width: 768px) {
+  .chat-shell {
+    height: calc(100vh - 14rem);
+    min-height: 420px;
+  }
+}
+
+/* ── Bottom sheet modals (mobile) ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+@media (min-width: 768px) {
+  .modal-overlay {
+    align-items: center;
+    padding: 16px;
+  }
+}
+
+.bottom-sheet {
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: #111111;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  border: 1px solid #222222;
+  padding-top: 8px;
+  animation: slide-up-sheet 0.25s ease-out;
+}
+
+@media (min-width: 768px) {
+  .bottom-sheet {
+    max-width: 42rem;
+    border-radius: 12px;
+    max-height: 90vh;
+  }
+}
+
+.bottom-sheet-handle {
+  width: 40px;
+  height: 4px;
+  margin: 8px auto 16px;
+  border-radius: 2px;
+  background: #333333;
+}
+
+@keyframes slide-up-sheet {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ── Onboarding mobile ── */
+.onboarding-wizard {
+  font-size: clamp(14px, 4vw, 18px);
+}
+
+.onboarding-wizard .onboarding-card-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .onboarding-wizard .onboarding-card-grid {
+    display: grid;
+  }
+}
+
+.onboarding-wizard .onboarding-btn {
+  width: 100%;
+  min-height: 48px;
+}
+
+@media (min-width: 640px) {
+  .onboarding-wizard .onboarding-btn {
+    width: auto;
+  }
 }

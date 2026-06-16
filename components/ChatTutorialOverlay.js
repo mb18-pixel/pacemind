@@ -134,7 +134,7 @@ export default function ChatTutorialOverlay({
         <button
           type="button"
           onClick={onSkip}
-          className="rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white backdrop-blur hover:bg-white/15"
+          className="touch-target rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white backdrop-blur hover:bg-white/15 min-h-[44px]"
         >
           Überspringen
         </button>
@@ -179,14 +179,14 @@ export default function ChatTutorialOverlay({
                 <button
                   type="button"
                   onClick={onLater}
-                  className="rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50"
+                  className="touch-target rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-800 hover:bg-neutral-50 min-h-[44px]"
                 >
                   Später
                 </button>
                 <button
                   type="button"
                   onClick={onLater}
-                  className="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+                  className="touch-target rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white hover:opacity-90 min-h-[44px]"
                 >
                   Training starten
                 </button>
@@ -195,7 +195,7 @@ export default function ChatTutorialOverlay({
               <button
                 type="button"
                 onClick={onNext}
-                className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-800"
+                className="touch-target rounded-md bg-neutral-900 px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-800 min-h-[44px]"
               >
                 Weiter →
               </button>

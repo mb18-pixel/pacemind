@@ -68,12 +68,12 @@ export default function ConsentDialog() {
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-3">
-          <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border bg-surface p-4 transition-colors hover:border-accent/50">
+          <label className="touch-target flex cursor-pointer items-start gap-3 rounded-md border border-border bg-surface p-4 transition-colors hover:border-accent/50 min-h-[44px]">
             <input
               type="checkbox"
               checked={privacy}
               onChange={(e) => setPrivacy(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded-sm border-border accent-accent"
+              className="mt-0.5 h-5 w-5 rounded-sm border-border accent-accent"
             />
             <span className="text-sm text-text">
               Ich stimme der{" "}
@@ -88,12 +88,12 @@ export default function ConsentDialog() {
             </span>
           </label>
 
-          <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border bg-surface p-4 transition-colors hover:border-accent/50">
+          <label className="touch-target flex cursor-pointer items-start gap-3 rounded-md border border-border bg-surface p-4 transition-colors hover:border-accent/50 min-h-[44px]">
             <input
               type="checkbox"
               checked={age}
               onChange={(e) => setAge(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded-sm border-border accent-accent"
+              className="mt-0.5 h-5 w-5 rounded-sm border-border accent-accent"
             />
             <span className="text-sm text-text">
               Ich bin mindestens 18 Jahre alt.

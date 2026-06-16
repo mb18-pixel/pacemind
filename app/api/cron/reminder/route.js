@@ -32,6 +32,42 @@ function daysBetween(a, b) {
   return Math.round((d2 - d1) / (24 * 60 * 60 * 1000));
 }
 
+const reminderSprueche = [
+  {
+    titel: "Dein Coach vermisst dich 🏃",
+    body: "Du hast seit {tage} Tagen nicht trainiert. Deine Laufschuhe fangen an, sich verlassen zu fühlen.",
+  },
+  {
+    titel: "Notfall-Erinnerung 🚨",
+    body: "Es ist offiziell: dein Sofa gewinnt gerade gegen deinen Trainingsplan.",
+  },
+  {
+    titel: "Kurze Frage 🤔",
+    body: "Existieren deine Laufschuhe noch oder hast du sie verkauft?",
+  },
+  {
+    titel: "Statusupdate 📊",
+    body: "{tage} Tage ohne Lauf. Dein VDOT-Wert schreibt gerade Beschwerdebriefe.",
+  },
+  {
+    titel: "Realitätscheck ⏰",
+    body: "Dein Trainingsplan und du habt euch entfremdet. Zeit für Paartherapie?",
+  },
+  {
+    titel: "Coach-Kommentar 💭",
+    body: "Ich erstelle hier wissenschaftlich fundierte Pläne und du schaust Netflix. Wir müssen reden.",
+  },
+];
+
+function getRandomReminder(tageSeitLetztemLauf) {
+  const zufall =
+    reminderSprueche[Math.floor(Math.random() * reminderSprueche.length)];
+  return {
+    titel: zufall.titel,
+    body: zufall.body.replace("{tage}", String(tageSeitLetztemLauf)),
+  };
+}
+
 export async function GET(request) {
   try {
     const authResp = requireCron(request);
@@ -70,9 +106,11 @@ export async function GET(request) {
       const diffDays = daysBetween(lastRun.created_at, today);
       if (diffDays < 3) continue;
 
+      const reminder = getRandomReminder(diffDays);
+
       const payload = JSON.stringify({
-        title: "Dein Coach vermisst dich 🏃",
-        body: `Letzter Lauf vor ${diffDays} Tagen. Wie geht's dir?`,
+        title: reminder.titel,
+        body: reminder.body,
         url: "/chat",
       });
 

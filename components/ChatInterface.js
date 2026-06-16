@@ -428,9 +428,11 @@ Was kann ich heute für dich tun?`;
                   border: "1px solid #333",
                   borderRadius: "20px",
                   color: "#fff",
-                  padding: "8px 14px",
+                  padding: "10px 16px",
                   fontSize: "13px",
                   cursor: "pointer",
+                  minHeight: "44px",
+                  minWidth: "44px",
                 }}
               >
                 {reply}
@@ -512,7 +514,7 @@ Was kann ich heute für dich tun?`;
                 ? "Spracheingabe aktiv"
                 : "Spracheingabe starten"
           }
-          className={`flex shrink-0 items-center justify-center rounded-md px-4 transition-all ${
+          className={`touch-target flex shrink-0 items-center justify-center rounded-md px-4 transition-all min-h-[44px] min-w-[44px] ${
             !supportsSpeech
               ? "cursor-not-allowed border border-border bg-surface opacity-40"
               : isRecording

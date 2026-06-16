@@ -19,13 +19,13 @@ export default function Footer() {
         <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs font-semibold uppercase tracking-wide">
           <Link
             href="/impressum"
-            className="text-text-muted transition-colors hover:text-accent"
+            className="touch-target text-text-muted transition-colors hover:text-accent py-2"
           >
             Impressum
           </Link>
           <Link
             href="/datenschutz"
-            className="text-text-muted transition-colors hover:text-accent"
+            className="touch-target text-text-muted transition-colors hover:text-accent py-2"
           >
             Datenschutz
           </Link>

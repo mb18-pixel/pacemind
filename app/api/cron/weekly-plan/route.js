@@ -37,6 +37,20 @@ function weekRangeIso(today = new Date()) {
   return { startIso: iso(start), endIso: iso(end) };
 }
 
+const weeklyPlanSprueche = [
+  "Dein Wochenplan ist da. Lesen kostet nichts. Ignorieren auch nicht – bis Samstag.",
+  "Neue Woche, neue Ausreden? Dein Plan wartet trotzdem.",
+  "Diese Woche: {einheiten} Einheiten, {km} km. Deine Couch wird das nicht mögen.",
+];
+
+function getRandomWeeklyPlanMessage(einheiten, km) {
+  const template =
+    weeklyPlanSprueche[Math.floor(Math.random() * weeklyPlanSprueche.length)];
+  return template
+    .replace("{einheiten}", String(einheiten))
+    .replace("{km}", String(Math.round(km * 10) / 10));
+}
+
 export async function GET(request) {
   try {
     const authResp = requireCron(request);
@@ -77,10 +91,13 @@ export async function GET(request) {
       const einheiten = entries.length;
       const km = entries.reduce((acc, e) => acc + (Number(e.distanz_km) || 0), 0);
 
+      const kmRounded = Math.round(km * 10) / 10;
+      const body = getRandomWeeklyPlanMessage(einheiten, kmRounded);
+
       const payload = JSON.stringify({
         title: "Dein Wochenplan ist bereit 💪",
-        body: `Diese Woche: ${einheiten} Einheiten, ${Math.round(km * 10) / 10} km geplant. Tap to see.`,
-        url: "/laeufe",
+        body,
+        url: "/kalender",
       });
 
       for (const sub of userSubs) {
