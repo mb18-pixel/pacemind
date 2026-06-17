@@ -165,7 +165,7 @@ body {
 }
 
 .btn-primary {
-  @apply rounded-md bg-accent px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition-all duration-200 min-h-[44px] touch-target;
+  @apply rounded-md bg-accent px-6 py-3 text-sm font-bold uppercase tracking-wide text-white transition-all duration-200 min-h-[44px];
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -178,7 +178,7 @@ body {
 }
 
 .btn-secondary {
-  @apply rounded-md border border-border bg-surface px-6 py-3 text-sm font-bold uppercase tracking-wide text-text transition-all duration-200 min-h-[44px] touch-target;
+  @apply rounded-md border border-border bg-surface px-6 py-3 text-sm font-bold uppercase tracking-wide text-text transition-all duration-200 min-h-[44px];
 }
 
 .btn-secondary:hover {
