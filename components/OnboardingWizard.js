@@ -617,6 +617,18 @@ export default function OnboardingWizard() {
                     key={opt.value}
                     type="button"
                     onClick={() => updateForm({ geschlecht: opt.value })}
+                    onTouchStart={() => {}}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      updateForm({ geschlecht: opt.value });
+                    }}
+                    style={{
+                      touchAction: 'manipulation',
+                      WebkitTapHighlightColor: 'transparent',
+                      WebkitUserSelect: 'none',
+                      userSelect: 'none',
+                      cursor: 'pointer'
+                    }}
                     className={`rounded-md border px-4 py-3 text-sm font-bold uppercase tracking-wide transition-all ${
                       form.geschlecht === opt.value
                         ? "border-accent bg-accent/15 text-text shadow-[0_0_16px_rgba(230,50,40,0.25)]"
@@ -675,6 +687,18 @@ export default function OnboardingWizard() {
                         key={card.id}
                         type="button"
                         onClick={() => updateForm({ koerperfettanteil: valToSet })}
+                        onTouchStart={() => {}}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          updateForm({ koerperfettanteil: valToSet });
+                        }}
+                        style={{
+                          touchAction: 'manipulation',
+                          WebkitTapHighlightColor: 'transparent',
+                          WebkitUserSelect: 'none',
+                          userSelect: 'none',
+                          cursor: 'pointer'
+                        }}
                         className={`flex flex-col items-center justify-center rounded-xl border p-3 text-center transition-all ${
                           isSelected
                             ? "border-accent bg-accent/15 text-text shadow-[0_0_12px_rgba(230,50,40,0.25)]"
@@ -714,6 +738,19 @@ export default function OnboardingWizard() {
                     setCustomKfaMode(!customKfaMode);
                     if (customKfaMode) updateForm({ koerperfettanteil: "" });
                   }}
+                  onTouchStart={() => {}}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    setCustomKfaMode(!customKfaMode);
+                    if (customKfaMode) updateForm({ koerperfettanteil: "" });
+                  }}
+                  style={{
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none',
+                    cursor: 'pointer'
+                  }}
                   className="text-xs font-semibold text-accent hover:underline"
                 >
                   {customKfaMode ? "← Zurück zur visuellen Auswahl" : "Ich weiß es genau (Manuelle Eingabe)"}
@@ -724,6 +761,18 @@ export default function OnboardingWizard() {
                     <button
                       type="button"
                       onClick={() => updateForm({ koerperfettanteil: "" })}
+                      onTouchStart={() => {}}
+                      onTouchEnd={(e) => {
+                        e.preventDefault();
+                        updateForm({ koerperfettanteil: "" });
+                      }}
+                      style={{
+                        touchAction: 'manipulation',
+                        WebkitTapHighlightColor: 'transparent',
+                        WebkitUserSelect: 'none',
+                        userSelect: 'none',
+                        cursor: 'pointer'
+                      }}
                       className="text-xs font-semibold text-text-muted hover:text-white"
                     >
                       Auswahl aufheben
@@ -777,6 +826,18 @@ export default function OnboardingWizard() {
                       <button
                         type="button"
                         onClick={() => selectCity(place)}
+                        onTouchStart={() => {}}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          selectCity(place);
+                        }}
+                        style={{
+                          touchAction: 'manipulation',
+                          WebkitTapHighlightColor: 'transparent',
+                          WebkitUserSelect: 'none',
+                          userSelect: 'none',
+                          cursor: 'pointer'
+                        }}
                         className="w-full px-4 py-3 text-left text-sm text-text transition-colors hover:bg-accent/10"
                       >
                         <span className="font-semibold">{place.name}</span>
@@ -823,6 +884,18 @@ export default function OnboardingWizard() {
                   key={opt.value}
                   type="button"
                   onClick={() => updateForm({ fitnesslevel: opt.value })}
+                  onTouchStart={() => {}}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    updateForm({ fitnesslevel: opt.value });
+                  }}
+                  style={{
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none',
+                    cursor: 'pointer'
+                  }}
                   className={`w-full rounded-md border p-5 text-left transition-all duration-200 ${
                     form.fitnesslevel === opt.value
                       ? "border-accent bg-accent/15 shadow-[0_0_20px_rgba(230,50,40,0.3)] scale-[1.02]"
@@ -860,6 +933,18 @@ export default function OnboardingWizard() {
                     key={opt.value}
                     type="button"
                     onClick={() => updateForm({ ziel: opt.value })}
+                    onTouchStart={() => {}}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      updateForm({ ziel: opt.value });
+                    }}
+                    style={{
+                      touchAction: 'manipulation',
+                      WebkitTapHighlightColor: 'transparent',
+                      WebkitUserSelect: 'none',
+                      userSelect: 'none',
+                      cursor: 'pointer'
+                    }}
                     className={`rounded-md border p-4 text-left transition-all duration-200 ${
                       form.ziel === opt.value
                         ? "border-accent bg-accent/15 shadow-[0_0_20px_rgba(230,50,40,0.3)] scale-[1.02]"
@@ -891,6 +976,18 @@ export default function OnboardingWizard() {
                     key={opt.value}
                     type="button"
                     onClick={() => updateForm({ ziel: opt.value })}
+                    onTouchStart={() => {}}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      updateForm({ ziel: opt.value });
+                    }}
+                    style={{
+                      touchAction: 'manipulation',
+                      WebkitTapHighlightColor: 'transparent',
+                      WebkitUserSelect: 'none',
+                      userSelect: 'none',
+                      cursor: 'pointer'
+                    }}
                     className={`rounded-md border p-4 text-left transition-all duration-200 ${
                       form.ziel === opt.value
                         ? "border-accent bg-accent/15 shadow-[0_0_20px_rgba(230,50,40,0.3)] scale-[1.02]"
@@ -961,6 +1058,18 @@ export default function OnboardingWizard() {
                   key={opt.value}
                   type="button"
                   onClick={() => updateForm({ aktuelleTrainingsfrequenz: opt.value })}
+                  onTouchStart={() => {}}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    updateForm({ aktuelleTrainingsfrequenz: opt.value });
+                  }}
+                  style={{
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none',
+                    cursor: 'pointer'
+                  }}
                   className={`rounded-md border p-4 text-center font-bold uppercase tracking-wide transition-all ${
                     form.aktuelleTrainingsfrequenz === opt.value
                       ? "border-accent bg-accent/15 text-text shadow-[0_0_16px_rgba(230,50,40,0.25)]"
@@ -997,6 +1106,18 @@ export default function OnboardingWizard() {
                   key={opt.value}
                   type="button"
                   onClick={() => updateForm({ aktuelleDistanz: opt.value })}
+                  onTouchStart={() => {}}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    updateForm({ aktuelleDistanz: opt.value });
+                  }}
+                  style={{
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none',
+                    cursor: 'pointer'
+                  }}
                   className={`rounded-md border p-4 text-center font-bold uppercase tracking-wide transition-all ${
                     form.aktuelleDistanz === opt.value
                       ? "border-accent bg-accent/15 text-text shadow-[0_0_16px_rgba(230,50,40,0.25)]"
@@ -1053,6 +1174,20 @@ export default function OnboardingWizard() {
                   updateForm({ referenzzeit: "" });
                   setReferenzzeitFehler("");
                   goNext();
+                }}
+                onTouchStart={() => {}}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  updateForm({ referenzzeit: "" });
+                  setReferenzzeitFehler("");
+                  goNext();
+                }}
+                style={{
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent',
+                  WebkitUserSelect: 'none',
+                  userSelect: 'none',
+                  cursor: 'pointer'
                 }}
                 className="btn-secondary w-full"
               >
@@ -1125,6 +1260,18 @@ export default function OnboardingWizard() {
                 <button
                   type="button"
                   onClick={() => setCustomGoalMode(true)}
+                  onTouchStart={() => {}}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    setCustomGoalMode(true);
+                  }}
+                  style={{
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent',
+                    WebkitUserSelect: 'none',
+                    userSelect: 'none',
+                    cursor: 'pointer'
+                  }}
                   className="btn-secondary flex-1"
                 >
                   Eigene Zeit eingeben
@@ -1182,6 +1329,30 @@ export default function OnboardingWizard() {
                               : "",
                           };
                           updateForm({ slots: newSlots });
+                        }}
+                        onTouchStart={() => {}}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          const newSlots = [...form.slots];
+                          const next = !newSlots[index].verfuegbar;
+                          newSlots[index] = {
+                            ...newSlots[index],
+                            verfuegbar: next,
+                            uhrzeit_start: next
+                              ? newSlots[index].uhrzeit_start || "07:00"
+                              : "",
+                            uhrzeit_ende: next
+                              ? newSlots[index].uhrzeit_ende || "08:00"
+                              : "",
+                          };
+                          updateForm({ slots: newSlots });
+                        }}
+                        style={{
+                          touchAction: 'manipulation',
+                          WebkitTapHighlightColor: 'transparent',
+                          WebkitUserSelect: 'none',
+                          userSelect: 'none',
+                          cursor: 'pointer'
                         }}
                         className={`relative h-7 w-12 rounded-md border transition-all ${
                           form.slots[index].verfuegbar
@@ -1319,6 +1490,18 @@ export default function OnboardingWizard() {
             <button
               type="button"
               onClick={goBack}
+              onTouchStart={() => {}}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                goBack();
+              }}
+              style={{
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+                WebkitUserSelect: 'none',
+                userSelect: 'none',
+                cursor: 'pointer'
+              }}
               className="flex items-center gap-2 rounded-md border border-border bg-transparent px-6 py-3 text-sm font-bold uppercase tracking-wide text-text transition-all duration-200 hover:border-accent hover:text-white active:scale-[0.98]"
             >
               <ArrowLeft size={18} />
@@ -1332,6 +1515,7 @@ export default function OnboardingWizard() {
             <button
               type="button"
               onClick={goNext}
+              onTouchStart={() => {}}
               onTouchEnd={(e) => {
                 e.preventDefault();
                 goNext(e);
@@ -1340,9 +1524,9 @@ export default function OnboardingWizard() {
               style={{
                 touchAction: 'manipulation',
                 WebkitTapHighlightColor: 'transparent',
-                cursor: 'pointer',
-                minHeight: '48px',
-                minWidth: '48px'
+                WebkitUserSelect: 'none',
+                userSelect: 'none',
+                cursor: 'pointer'
               }}
               className={`ml-auto flex items-center gap-2 rounded-md px-6 py-3 text-sm font-bold uppercase tracking-wide transition-all duration-200 ${
                 isStepValid()
@@ -1357,6 +1541,18 @@ export default function OnboardingWizard() {
             <button
               type="button"
               onClick={handleTrainingStarten}
+              onTouchStart={() => {}}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                handleTrainingStarten();
+              }}
+              style={{
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+                WebkitUserSelect: 'none',
+                userSelect: 'none',
+                cursor: 'pointer'
+              }}
               className="btn-primary ml-auto flex items-center gap-2"
             >
               Training starten →
@@ -1367,6 +1563,18 @@ export default function OnboardingWizard() {
               type="button"
               onClick={finishOnboarding}
               disabled={saving}
+              onTouchStart={() => {}}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                finishOnboarding();
+              }}
+              style={{
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent',
+                WebkitUserSelect: 'none',
+                userSelect: 'none',
+                cursor: 'pointer'
+              }}
               className="btn-primary ml-auto flex items-center gap-2"
             >
               {saving ? (

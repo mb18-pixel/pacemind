@@ -274,11 +274,9 @@ h2, .h2 {
 }
 
 /* ── Safari-specific touch fixes ── */
-button, a, [role="button"] {
+button, [role="button"], a {
   -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
   touch-action: manipulation;
-  cursor: pointer;
 }
 
 input, textarea {
