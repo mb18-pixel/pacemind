@@ -1380,7 +1380,7 @@ export default function OnboardingWizard() {
             <button
               type="button"
               onClick={goBack}
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', pointerEvents: 'auto' }}
               className="flex items-center gap-2 rounded-md border border-border bg-transparent px-6 py-3 text-sm font-bold uppercase tracking-wide text-text transition-all duration-200 hover:border-accent hover:text-white active:scale-[0.98]"
             >
               <ArrowLeft size={18} />
@@ -1390,7 +1390,7 @@ export default function OnboardingWizard() {
             <button
               type="button"
               onClick={() => router.push('/')}
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', pointerEvents: 'auto' }}
               className="flex items-center gap-2 rounded-md border border-border bg-transparent px-6 py-3 text-sm font-bold uppercase tracking-wide text-text transition-all duration-200 hover:border-accent hover:text-white active:scale-[0.98]"
             >
               <ArrowLeft size={18} />
