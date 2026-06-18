@@ -1375,7 +1375,7 @@ export default function OnboardingWizard() {
           </p>
         )}
 
-        <div className="mt-8 flex items-center justify-between gap-4">
+        <div className="sticky bottom-0 mt-8 flex items-center justify-between gap-4 bg-bg py-4 border-t border-border/30">
           {step > 1 ? (
             <button
               type="button"
@@ -1390,19 +1390,10 @@ export default function OnboardingWizard() {
             <div />
           )}
 
-          {step < totalSteps ? (
+          {step < totalSteps && (
             <button
               type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (!isStepValid()) {
-                  setError(getStepError());
-                  return;
-                }
-                goNext();
-              }}
-              aria-disabled={!isStepValid()}
+              onClick={() => goNext()}
               style={{
                 touchAction: 'manipulation',
                 WebkitTapHighlightColor: 'transparent',
@@ -1417,6 +1408,7 @@ export default function OnboardingWizard() {
               Weiter
               <ArrowRight size={18} />
             </button>
+          )}
           ) : step === totalSteps ? (
             <button
               type="button"

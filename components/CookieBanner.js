@@ -1,14 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+
+const AUTH_PATHS = ["/login", "/register", "/consent", "/onboarding"];
 
 export default function CookieBanner() {
+  const pathname = usePathname();
   const [sichtbar, setSichtbar] = useState(false);
 
   useEffect(() => {
+    // Don't show on auth/onboarding pages – the banner overlays action buttons
+    if (AUTH_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+      setSichtbar(false);
+      return;
+    }
     const akzeptiert = localStorage.getItem("cookies_akzeptiert");
     if (!akzeptiert) setSichtbar(true);
-  }, []);
+  }, [pathname]);
 
   function akzeptieren() {
     localStorage.setItem("cookies_akzeptiert", "true");
