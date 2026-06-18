@@ -1390,7 +1390,7 @@ export default function OnboardingWizard() {
             <div />
           )}
 
-          {step < totalSteps && (
+          {step < totalSteps ? (
             <button
               type="button"
               onClick={() => goNext()}
@@ -1408,7 +1408,6 @@ export default function OnboardingWizard() {
               Weiter
               <ArrowRight size={18} />
             </button>
-          )}
           ) : step === totalSteps ? (
             <button
               type="button"
