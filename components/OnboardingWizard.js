@@ -1387,7 +1387,15 @@ export default function OnboardingWizard() {
               Zurück
             </button>
           ) : (
-            <div />
+            <button
+              type="button"
+              onClick={() => router.push('/')}
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+              className="flex items-center gap-2 rounded-md border border-border bg-transparent px-6 py-3 text-sm font-bold uppercase tracking-wide text-text transition-all duration-200 hover:border-accent hover:text-white active:scale-[0.98]"
+            >
+              <ArrowLeft size={18} />
+              Zurück
+            </button>
           )}
 
           {step < totalSteps ? (
