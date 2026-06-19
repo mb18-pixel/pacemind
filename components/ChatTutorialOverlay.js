@@ -141,7 +141,7 @@ export default function ChatTutorialOverlay({
       </div>
 
       {/* Card */}
-      <div className="fixed bottom-6 left-0 right-0 z-[81] px-4">
+      <div className="fixed bottom-6 left-0 right-0 z-[81] px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <div className="mx-auto w-full max-w-xl rounded-xl bg-white p-5 shadow-2xl">
           <p className="text-xs font-bold uppercase tracking-widest text-neutral-600">
             Schritt {stepIndex + 1}/{total}

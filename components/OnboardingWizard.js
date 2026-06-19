@@ -1375,7 +1375,7 @@ export default function OnboardingWizard() {
           </p>
         )}
 
-        <div className="sticky bottom-0 mt-8 flex items-center justify-between gap-4 bg-bg py-4 border-t border-border/30 z-10">
+        <div className="sticky bottom-0 mt-8 flex items-center justify-between gap-4 bg-bg py-4 border-t border-border/30 z-10 pb-[max(1rem,env(safe-area-inset-bottom))]">
           {step > 1 ? (
             <button
               type="button"
@@ -1401,10 +1401,7 @@ export default function OnboardingWizard() {
           {step < totalSteps ? (
             <button
               type="button"
-              onClick={() => {
-                alert("Button geklickt - Touch-Event empfangen");
-                goNext();
-              }}
+              onClick={() => goNext()}
               style={{
                 touchAction: 'manipulation',
                 WebkitTapHighlightColor: 'transparent',

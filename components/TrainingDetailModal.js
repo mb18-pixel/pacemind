@@ -686,7 +686,7 @@ export default function TrainingDetailModal({
           </section>
 
           {/* SECTION 5: ACTIONS */}
-          <section className="sticky bottom-0 bg-surface pt-4 border-t border-border px-4 md:px-6">
+          <section className="sticky bottom-0 bg-surface pt-4 border-t border-border px-4 md:px-6 pb-[max(1rem,env(safe-area-inset-bottom))]">
             <div className="grid grid-cols-3 gap-3">
               {/* Complete button */}
               <button

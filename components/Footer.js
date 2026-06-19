@@ -8,7 +8,7 @@ export default function Footer() {
   if (pathname === "/") return null;
 
   return (
-    <footer className="mt-auto border-t border-border bg-bg">
+    <footer className="mt-auto border-t border-border bg-bg pb-[max(1rem,env(safe-area-inset-bottom))]">
       <div className="mx-auto max-w-5xl px-4 py-8">
         <p className="text-center text-sm text-text-muted">
           Ascend ist ein kostenloses Tool der{" "}
