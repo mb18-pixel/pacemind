@@ -149,7 +149,7 @@ export default function WeeklyRecapCard() {
         <div className="flex justify-end">
           <button
             onClick={handleDismiss}
-            className="w-full sm:w-auto rounded-md bg-accent px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-white transition-all duration-200 hover:bg-accent-hover hover:scale-[1.02] active:scale-[0.98] hover:shadow-[0_0_20px_rgba(230,50,40,0.4)] cursor-pointer"
+            className="touch-target w-full sm:w-auto rounded-md bg-accent px-6 py-3 text-xs font-bold uppercase tracking-widest text-white transition-all duration-200 hover:bg-accent-hover hover:scale-[1.02] active:scale-[0.98] hover:shadow-[0_0_20px_rgba(230,50,40,0.4)] cursor-pointer"
           >
             Nächste Woche →
           </button>
