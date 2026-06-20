@@ -281,19 +281,13 @@ export default function OnboardingWizard() {
     }
   }
 
-  // Parse existing referenzzeit to populate minutes/seconds when step changes
+  // Clear minutes/seconds when leaving step 8
   useEffect(() => {
-    if (step === 8 && form.referenzzeit) {
-      const parts = form.referenzzeit.split(':');
-      if (parts.length >= 2) {
-        setMinuten(parts[parts.length - 2] || '');
-        setSekunden(parts[parts.length - 1] || '');
-      }
-    } else if (step !== 8) {
+    if (step !== 8) {
       setMinuten('');
       setSekunden('');
     }
-  }, [step, form.referenzzeit]);
+  }, [step]);
 
   useEffect(() => {
     if (step !== 2 || form.stadtQuery.trim().length < 2) {
