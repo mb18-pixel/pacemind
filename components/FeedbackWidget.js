@@ -64,7 +64,7 @@ export default function FeedbackWidget() {
     <div
       style={{
         position: "fixed",
-        bottom: "24px",
+        top: "24px",
         right: "24px",
         zIndex: 30,
         display: "flex",
@@ -203,31 +203,6 @@ export default function FeedbackWidget() {
           </>
         )}
       </div>
-
-      <button
-        onClick={() => {
-          setOffen((prev) => !prev);
-          setFehler("");
-          if (gesendet) setGesendet(false);
-        }}
-        className="hidden md:flex"
-        style={{
-          background: "#e63228",
-          color: "#fff",
-          border: "none",
-          borderRadius: "20px",
-          padding: "10px 16px",
-          fontSize: "13px",
-          fontWeight: "600",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          gap: "6px",
-          boxShadow: "0 4px 12px rgba(230,50,40,0.3)",
-        }}
-      >
-        💬 Feedback
-      </button>
     </div>
   );
 }
