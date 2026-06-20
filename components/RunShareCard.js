@@ -5,39 +5,48 @@ import { toPng } from "html-to-image";
 import { formatPace } from "@/lib/runs";
 
 const QUOTES = {
-  langsam: [
-    "Geschwindigkeit ist relativ. Genau wie meine Lebenserwartung beim nächsten Mal.",
-    "Ich war nicht schnell. Aber ich war da. Das zählt auch, oder?",
-    "Mein Tempo heute: gemütlicher Spaziergang mit Ambitionen.",
-  ],
-  mittel: [
-    "Nicht schnell, nicht langsam. Einfach... anwesend.",
-    "Heute kein Rekord. Aber auch kein Krankenwagen nötig.",
-  ],
-  schnell: [
-    "Mein Hausarzt wäre stolz. Mein Hausarzt wäre besorgt.",
-    "Lief schneller als meine Lebensentscheidungen normalerweise gehen.",
-  ],
-  lang: [
-    "Mein Körper hat mehrfach um eine Auszeit gebeten. Ich habe ignoriert.",
-    "Heute mehr Kilometer gelaufen als ich Probleme gelöst habe.",
-  ],
-  kurz: [
-    "Kurz, aber immerhin nicht Couch.",
-    "Klein aber oho. Hauptsache raus.",
-  ],
-  gut: [
-    "Endorphine: 1, Innere Stimme die sagte 'bleib im Bett': 0",
-  ],
-  schlecht: [
-    "Manche Tage läuft man einfach. Andere Tage überlebt man.",
+  langsam: [],
+  mittel: [],
+  schnell: [],
+  lang: [],
+  kurz: [],
+  gut: [],
+  schlecht: [],
+  bestzeit: [
+    "Neue Bestzeit. Endlich etwas in deinem Leben, das vorankommt.",
+    "PR erreicht. Deine Eltern sind jetzt vielleicht endlich etwas stolz.",
+    "Du warst heute schneller als die meisten deiner Ausreden.",
+    "Neue Bestzeit. Endlich etwas, bei dem du nicht enttäuschst.",
+    "Neue Bestzeit. Die Messlatte lag offenbar tief genug.",
+    "Noch ein Rekord. Jetzt fehlen nur noch die anderen Erfolge.",
   ],
   allgemein: [
-    "Lief heute. Niemand hat mich gezwungen. Ich verstehe es selbst nicht.",
-    "Schritt für Schritt näher am Marathon. Oder am Orthopäden.",
-    "Heute kein Rekord gebrochen. Nur mein Wille zur Vernunft.",
-    "Liefen Menschen schon vor Netflix. Verrückte Zeiten.",
-    "Mein Knie hat heute eine eigene Meinung gehabt.",
+    "Du warst heute länger unterwegs als die meisten Beziehungen halten.",
+    "Du hältst dein Lauftempo länger als manche ihre Ehe.",
+    "So viel Einsatz. Für so einen Lauf?",
+    "Deine Pace war konstant. Das kann nicht jeder von seinem Liebesleben behaupten.",
+    "Kalorien verbrannt. Deine Chancen auf ein Date bleiben trotzdem bei 0.",
+    "Starke Leistung. Juckt aber wirklich keinen.",
+    "Mehr leere Versprechen gab es heute nur im Wahlkampf.",
+    "Deine Beine sind angeschlagener als der Staatshaushalt.",
+    "Deine Motivation hält länger als manche Koalition.",
+    "Der Puls steigt schneller als öffentliche Ausgaben.",
+    "Das Tempo erinnert an deutsche Behörden.",
+    "Mehr rote Flaggen gab es heute nur in deinem Dating-Profil.",
+    "Wenn schlechte Entscheidungen Sport wären, wärst du Weltmeister.",
+    "Ascend sieht Fortschritt bei dir. Der Rest deines Lebens eher nicht.",
+    "Starke Einheit. Schade, dass man Charakter nicht trainieren kann.",
+    "Du rennst mit beeindruckender Konsequenz in die falsche Richtung.",
+    "Beeindruckende Leistung für Menschen wie dich!",
+    "Selbst ich als KI mache mir Sorgen bei dir…",
+    "Du bist beim Laufen sogar schneller als im Bett am Ziel!",
+    "Auf wen hast du beim Laufen gewartet?",
+    "Beeindruckende Leistung. Fast genug, um von allem anderen abzulenken.",
+    "Ascend hat einen Fortschritt erkannt. Wir waren selbst überrascht.",
+    "Du bist heute weiter gekommen als deine letzte Beziehung.",
+    "Deine Ausdauer ist beeindruckend. Schade, dass niemand da ist, den das interessiert.",
+    "Du bist heute weiter gekommen als deine Karriere.",
+    "Die App ist stolz auf dich. Sonst meldet sich ja niemand.",
   ],
 };
 
@@ -45,8 +54,39 @@ function paceSecPerKm(run) {
   return run.paceMin * 60 + (run.paceSec || 0);
 }
 
-export function pickHumorQuote(run) {
-  const pool = [...QUOTES.allgemein];
+function isBestzeit(run, allRuns) {
+  const currentDist = Number(run.distanceKm) || 0;
+  const currentPaceSec = paceSecPerKm(run);
+  
+  // Find comparable runs (±15% distance tolerance)
+  const comparableRuns = allRuns.filter(r => {
+    const dist = Number(r.distanceKm) || 0;
+    const tolerance = currentDist * 0.15;
+    return dist >= currentDist - tolerance && dist <= currentDist + tolerance;
+  });
+  
+  // If no comparable runs, it's not a PR (no reference times in DB)
+  if (comparableRuns.length === 0) return false;
+  
+  // Check if current pace is faster than all comparable runs
+  const isFastest = comparableRuns.every(r => {
+    const paceSec = paceSecPerKm(r);
+    return currentPaceSec < paceSec;
+  });
+  
+  return isFastest;
+}
+
+export function pickHumorQuote(run, isBestzeit = false) {
+  let pool;
+  
+  // 70% chance to use bestzeit quotes if it's a PR
+  if (isBestzeit && Math.random() < 0.7) {
+    pool = [...QUOTES.bestzeit];
+  } else {
+    pool = [...QUOTES.allgemein];
+  }
+  
   const paceSec = paceSecPerKm(run);
   const dist = Number(run.distanceKm) || 0;
   const feeling = Number(run.feeling) || 0;
@@ -196,7 +236,20 @@ export function ShareRunButton({ run }) {
   const [capture, setCapture] = useState(null);
 
   async function handleShare() {
-    const quote = pickHumorQuote(run);
+    // Fetch all runs to check for PR
+    let allRuns = [run];
+    try {
+      const response = await fetch("/api/runs");
+      if (response.ok) {
+        const data = await response.json();
+        allRuns = data.runs || [];
+      }
+    } catch (err) {
+      console.error("Failed to fetch runs for PR check:", err);
+    }
+
+    const isBestzeitFlag = isBestzeit(run, allRuns);
+    const quote = pickHumorQuote(run, isBestzeitFlag);
     setCapture({ run, quote });
     setStatus("generating");
 
