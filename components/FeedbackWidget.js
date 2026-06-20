@@ -21,7 +21,7 @@ export default function FeedbackWidget() {
     };
   }, []);
 
-  if (pathname.startsWith('/onboarding')) {
+  if (pathname.startsWith('/onboarding') || pathname === '/chat') {
     return null;
   }
 
