@@ -18,6 +18,10 @@ import {
 
 const MODEL = "llama-3.3-70b-versatile";
 
+// Globales App-Tageslimit als Sicherheitsnetz gegen Bots/Bugs/Überlastung
+// Dieser Wert sollte je nach Groq-Tagesbudget angepasst werden
+const GLOBAL_DAILY_LIMIT = 800;
+
 function extractTextFromResponse(content) {
   const safeContent = typeof content === "string" ? content : String(content ?? "");
 
@@ -438,6 +442,28 @@ export async function POST(request) {
           },
         },
         { status: 200 }
+      );
+    }
+
+    // Globales App-Tageslimit prüfen (Sicherheitsnetz gegen Bots/Bugs/Überlastung)
+    const { data: globalUsage, error: globalUsageError } = await supabase.rpc(
+      "increment_and_check_global_usage",
+      {
+        target_date: heute,
+        limit_threshold: GLOBAL_DAILY_LIMIT,
+      }
+    );
+
+    if (globalUsageError) {
+      console.error("Global usage check error:", globalUsageError);
+      // Bei Fehler im RPC-Call lassen wir die Anfrage durch (fail-safe)
+    } else if (globalUsage?.exceeded) {
+      return Response.json(
+        {
+          error: "Ascend ist heute außergewöhnlich gefragt. Bitte versuche es morgen wieder.",
+          globalLimitReached: true,
+        },
+        { status: 429 }
       );
     }
 

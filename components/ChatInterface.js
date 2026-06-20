@@ -221,7 +221,13 @@ Was kann ich heute für dich tun?`;
         notifyPlanUpdated();
       }
     } catch (err) {
-      setError(err.message);
+      // Prüfe auf globales Limit (Status 429 mit globalLimitReached)
+      if (res.status === 429 && err.message?.includes("außergewöhnlich gefragt")) {
+        setError("Ascend ist heute außergewöhnlich gefragt. Bitte versuche es morgen wieder.");
+        setLimitReached(true);
+      } else {
+        setError(err.message);
+      }
       setMessages((prev) => prev.slice(0, -1));
       setInput(text);
     } finally {
