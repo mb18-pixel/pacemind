@@ -386,7 +386,7 @@ export default function TrainingDetailModal({
         <div className="bottom-sheet-handle" />
         
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-start justify-between bg-surface pb-4 border-b border-border px-4 md:px-6">
+        <div className="sticky top-0 flex items-start justify-between bg-surface pb-4 border-b border-border px-4 md:px-6" style={{ zIndex: 10 }}>
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-text-muted">
               {formatDate(trainingEntry.datum)}
@@ -480,7 +480,7 @@ export default function TrainingDetailModal({
                 {trainingPhases.map((phase, idx) => (
                   <div key={idx} className="relative flex items-start gap-4 pl-12">
                     {/* Timeline dot */}
-                    <div className={`absolute left-4 top-1 w-4 h-4 rounded-full border-2 ${phase.borderColor} ${phase.bgColor} flex items-center justify-center z-10`}>
+                    <div className={`absolute left-4 top-1 w-4 h-4 rounded-full border-2 ${phase.borderColor} ${phase.bgColor} flex items-center justify-center`} style={{ zIndex: 10 }}>
                       <div className={`w-2 h-2 rounded-full ${phase.color.replace("text-", "bg-")}`}></div>
                     </div>
                     

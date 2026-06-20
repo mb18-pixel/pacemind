@@ -39,7 +39,7 @@ export default function Navbar() {
 
   if (pathname === "/") {
     return (
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/10 bg-bg/50 backdrop-blur-md">
+      <header className="fixed top-0 left-0 right-0 border-b border-border/10 bg-bg/50 backdrop-blur-md" style={{ zIndex: 20 }}>
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <Link href="/" className="group shrink-0">
             <span className="page-title text-lg sm:text-xl">Ascend</span>
@@ -84,7 +84,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 hidden border-b border-border bg-bg/95 backdrop-blur-sm md:block">
+      <header className="sticky top-0 hidden border-b border-border bg-bg/95 backdrop-blur-sm md:block" style={{ zIndex: 20 }}>
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <Link href="/chat" className="group shrink-0">
             <span className="page-title text-xl">Ascend</span>
@@ -127,7 +127,7 @@ export default function Navbar() {
         </div>
       </header>
 
-      <header className="sticky top-0 z-50 border-b border-border bg-bg/95 backdrop-blur-sm md:hidden">
+      <header className="sticky top-0 border-b border-border bg-bg/95 backdrop-blur-sm md:hidden" style={{ zIndex: 20 }}>
         <div className="flex items-center justify-center px-4 py-3">
           <Link href="/chat" className="text-center">
             <span className="text-base font-extrabold uppercase tracking-tight text-text">

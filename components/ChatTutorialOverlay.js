@@ -100,7 +100,7 @@ export default function ChatTutorialOverlay({
   const isLast = stepIndex === total - 1;
 
   return (
-    <div className="fixed inset-0 z-[80]">
+    <div className="fixed inset-0" style={{ zIndex: 60 }}>
       {/* Overlay/Spotlight */}
       {spotlight ? (
         <div
@@ -120,7 +120,7 @@ export default function ChatTutorialOverlay({
       )}
 
       {/* Progress */}
-      <div className="fixed left-0 right-0 top-0 z-[81]">
+      <div className="fixed left-0 right-0 top-0" style={{ zIndex: 60 }}>
         <div className="h-1 bg-white/15">
           <div
             className="h-full bg-accent transition-all duration-300 ease-out"
@@ -130,7 +130,7 @@ export default function ChatTutorialOverlay({
       </div>
 
       {/* Skip */}
-      <div className="fixed right-4 top-4 z-[81]">
+      <div className="fixed right-4 top-4" style={{ zIndex: 60 }}>
         <button
           type="button"
           onClick={onSkip}
@@ -141,7 +141,7 @@ export default function ChatTutorialOverlay({
       </div>
 
       {/* Card */}
-      <div className="fixed bottom-6 left-0 right-0 z-[81] px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+      <div className="fixed bottom-6 left-0 right-0 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]" style={{ zIndex: 60 }}>
         <div className="mx-auto w-full max-w-xl rounded-xl bg-white p-5 shadow-2xl">
           <p className="text-xs font-bold uppercase tracking-widest text-neutral-600">
             Schritt {stepIndex + 1}/{total}

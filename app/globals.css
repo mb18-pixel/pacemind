@@ -14,6 +14,15 @@
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
+  --z-base: 0;
+  --z-content: 10;
+  --z-sticky-nav: 20;
+  --z-fixed-bar: 30;
+  --z-overlay: 40;
+  --z-modal: 50;
+  --z-tutorial: 60;
+  --z-cookie-banner: 70;
+  --safe-zone-bottom-right-height: 80px;
 }
 
 * {
@@ -290,7 +299,7 @@ input, textarea {
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 50;
+  z-index: var(--z-fixed-bar);
   display: flex;
   align-items: stretch;
   justify-content: space-around;
@@ -373,7 +382,7 @@ input, textarea {
     left: 0;
     right: 0;
     bottom: calc(60px + env(safe-area-inset-bottom, 0px));
-    z-index: 40;
+    z-index: var(--z-fixed-bar);
     background: #111111;
     border-top: 1px solid #222222;
   }
@@ -390,7 +399,7 @@ input, textarea {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 70;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: flex-end;
   justify-content: center;

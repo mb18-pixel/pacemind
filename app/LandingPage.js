@@ -333,12 +333,12 @@ export default function LandingPage() {
           style={{
             background:
               "linear-gradient(to bottom, rgba(10,10,10,0.7) 0%, rgba(10,10,10,0.5) 50%, rgba(10,10,10,0.9) 100%)",
-            zIndex: 1,
+            zIndex: 10,
           }}
         />
 
         {/* Animated red glowing background */}
-        <div className="pointer-events-none absolute inset-0 z-[1] select-none">
+        <div className="pointer-events-none absolute inset-0 select-none" style={{ zIndex: 10 }}>
           {/* Main center glow */}
           <div className="glow-blob absolute bottom-[-10%] right-[-5%] h-[620px] w-[620px] rounded-full bg-[#e63228] blur-[160px]" />
           {/* Secondary top-left ambient */}
@@ -348,7 +348,7 @@ export default function LandingPage() {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 pb-24 pt-28 text-center">
+        <div className="relative flex flex-1 flex-col items-center justify-center px-4 pb-24 pt-28 text-center" style={{ zIndex: 10 }}>
           <AnimatedHeadline />
 
           <p
@@ -379,7 +379,7 @@ export default function LandingPage() {
         <button
           onClick={scrollDown}
           aria-label="Weiter scrollen"
-          className="absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-2 text-[#555] transition-colors hover:text-white focus:outline-none"
+          className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 text-[#555] transition-colors hover:text-white focus:outline-none" style={{ zIndex: 10 }}
         >
           <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Mehr</span>
           <ChevronDown className="h-5 w-5 text-[#e63228] bounce-slow" strokeWidth={2.5} />
@@ -571,7 +571,7 @@ export default function LandingPage() {
             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#e63228]/40 to-transparent" />
             <div className="pointer-events-none absolute -top-1/2 left-1/2 -translate-x-1/2 h-[400px] w-[400px] rounded-full bg-[#e63228]/7 blur-[100px]" />
 
-            <div className="relative z-10">
+            <div className="relative" style={{ zIndex: 10 }}>
               <h2 className="text-4xl font-black uppercase tracking-tighter text-white sm:text-5xl md:text-6xl">
                 Bereit zu laufen?
               </h2>

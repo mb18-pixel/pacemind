@@ -40,7 +40,7 @@ export default function CookieBanner() {
         alignItems: "center",
         justifyContent: "space-between",
         gap: "16px",
-        zIndex: 9999,
+        zIndex: 70,
         flexWrap: "wrap",
       }}
     >

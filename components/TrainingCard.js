@@ -358,7 +358,7 @@ export default function TrainingCard({ trainingEntry, completedRun = null }) {
             <div className="space-y-3">
               {trainingPhases.map((phase, idx) => (
                 <div key={idx} className="relative flex items-start gap-3 pl-12">
-                  <div className={`absolute left-4 top-0.5 w-4 h-4 rounded-full border-2 ${phase.borderColor} ${phase.bgColor} flex items-center justify-center z-10`}>
+                  <div className={`absolute left-4 top-0.5 w-4 h-4 rounded-full border-2 ${phase.borderColor} ${phase.bgColor} flex items-center justify-center`} style={{ zIndex: 10 }}>
                     <div className={`w-2 h-2 rounded-full ${phase.color.replace("text-", "bg-")}`}></div>
                   </div>
                   <div className={`flex-1 rounded-lg border ${phase.borderColor} ${phase.bgColor} p-2.5`}>

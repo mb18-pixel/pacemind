@@ -65,7 +65,7 @@ export default function WeeklyRecapCard() {
       {/* Background radial glow */}
       <div className="absolute -right-20 -top-20 w-48 h-48 rounded-full bg-accent/5 blur-3xl pointer-events-none select-none" />
       
-      <div className="relative z-10">
+      <div className="relative" style={{ zIndex: 10 }}>
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div>
             <span className="inline-block rounded-md bg-accent/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-accent mb-2">

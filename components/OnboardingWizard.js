@@ -837,7 +837,7 @@ export default function OnboardingWizard() {
                 autoComplete="off"
               />
               {showSuggestions && suggestions.length > 0 && (
-                <ul className="absolute z-20 mt-1 max-h-48 w-full overflow-auto rounded-md border border-border bg-surface-elevated shadow-lg">
+                <ul className="absolute mt-1 max-h-48 w-full overflow-auto rounded-md border border-border bg-surface-elevated shadow-lg" style={{ zIndex: 10 }}>
                   {suggestions.map((place) => (
                     <li key={`${place.id}-${place.latitude}`}>
                       <button
@@ -1445,7 +1445,7 @@ export default function OnboardingWizard() {
           </p>
         )}
 
-        <div className="fixed bottom-0 left-0 right-0 mt-8 flex items-center justify-between gap-4 bg-bg py-4 border-t border-border/30 z-50 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="fixed bottom-0 left-0 right-0 mt-8 flex items-center justify-between gap-4 bg-bg py-4 border-t border-border/30 pb-[max(1rem,env(safe-area-inset-bottom))]" style={{ zIndex: 50 }}>
           {step > 1 ? (
             <button
               type="button"
