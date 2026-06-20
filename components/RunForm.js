@@ -153,6 +153,9 @@ export default function RunForm({ onSaved }) {
         <span className="mb-3 block text-xs font-bold uppercase tracking-wide text-text-muted">
           Befinden (1–5)
         </span>
+        <p className="mb-3 text-xs text-text-muted">
+          1 = sehr schlecht, 5 = sehr gut
+        </p>
         <div className="flex gap-2">
           {[1, 2, 3, 4, 5].map((n) => (
             <button

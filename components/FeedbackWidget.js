@@ -210,34 +210,6 @@ export default function FeedbackWidget() {
           setFehler("");
           if (gesendet) setGesendet(false);
         }}
-        className="md:hidden"
-        style={{
-          position: "fixed",
-          top: "12px",
-          right: "16px",
-          zIndex: 21,
-          background: "#e63228",
-          color: "#fff",
-          border: "none",
-          borderRadius: "20px",
-          padding: "8px 12px",
-          fontSize: "12px",
-          fontWeight: "600",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          gap: "4px",
-          boxShadow: "0 4px 12px rgba(230,50,40,0.3)",
-        }}
-      >
-        💬
-      </button>
-      <button
-        onClick={() => {
-          setOffen((prev) => !prev);
-          setFehler("");
-          if (gesendet) setGesendet(false);
-        }}
         className="hidden md:flex"
         style={{
           background: "#e63228",

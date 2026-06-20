@@ -42,9 +42,6 @@ export default function LaeufePage() {
             <h1 className="text-2xl font-extrabold uppercase tracking-tight text-text">
               Deine Läufe
             </h1>
-            <p className="text-sm text-text-muted">
-              Die letzten 5 Läufe werden im Coach-Chat als Kontext genutzt.
-            </p>
           </div>
         </div>
       </div>
