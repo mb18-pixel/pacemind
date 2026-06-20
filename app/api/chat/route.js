@@ -398,7 +398,7 @@ export async function POST(request) {
     let profilNachrichten = {
       nachrichten_heute: profil?.nachrichten_heute || 0,
       nachrichten_reset_datum: profil?.nachrichten_reset_datum || heute,
-      nachrichten_limit: profil?.nachrichten_limit || 20,
+      nachrichten_limit: profil?.nachrichten_limit || 10,
     };
 
     const letzterReset = profilNachrichten?.nachrichten_reset_datum;
@@ -423,7 +423,7 @@ export async function POST(request) {
       };
     }
 
-    const limit = profilNachrichten?.nachrichten_limit || 20;
+    const limit = profilNachrichten?.nachrichten_limit || 10;
     const genutzt = profilNachrichten?.nachrichten_heute || 0;
 
     if (genutzt >= limit) {

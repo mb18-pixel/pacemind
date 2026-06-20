@@ -123,7 +123,7 @@ Was kann ich heute für dich tun?`;
           data?.nachrichten_reset_datum === heute
             ? data?.nachrichten_heute || 0
             : 0;
-        const nachrichtenLimit = data?.nachrichten_limit || 20;
+        const nachrichtenLimit = data?.nachrichten_limit || 10;
 
         if (!cancelled) {
           setNachrichtenInfo({
@@ -203,7 +203,7 @@ Was kann ich heute für dich tun?`;
         setNachrichtenInfo((prev) => {
           if (!prev) return prev;
           const nextCount = (prev.nachrichten_heute || 0) + 1;
-          const nextLimit = prev.nachrichten_limit || 20;
+          const nextLimit = prev.nachrichten_limit || 10;
           setLimitReached(nextCount >= nextLimit);
           return {
             ...prev,
