@@ -194,6 +194,10 @@ export default function OnboardingWizard() {
   const [customKfaMode, setCustomKfaMode] = useState(false);
   const [referenzzeitFehler, setReferenzzeitFehler] = useState("");
   const confettiTriggered = useRef(false);
+  const minutenRef = useRef(null);
+  const sekundenRef = useRef(null);
+  const [minuten, setMinuten] = useState("");
+  const [sekunden, setSekunden] = useState("");
 
   // Calculate total steps based on goal type
   const healthGoals = ["gesund bleiben", "abnehmen", "fit bleiben"];
@@ -238,6 +242,58 @@ export default function OnboardingWizard() {
       setReferenzzeitFehler('');
     }
   }
+
+  function handleMinutenChange(e) {
+    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
+    setMinuten(value);
+    
+    // Auto-focus to seconds field after 2 digits
+    if (value.length === 2) {
+      sekundenRef.current?.focus();
+    }
+    
+    updateReferenzzeit(value, sekunden);
+  }
+
+  function handleSekundenChange(e) {
+    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
+    setSekunden(value);
+    updateReferenzzeit(minuten, value);
+  }
+
+  function updateReferenzzeit(min, sec) {
+    if (!min && !sec) {
+      updateForm({ referenzzeit: "" });
+      setReferenzzeitFehler('');
+      return;
+    }
+    
+    const minStr = min.padStart(2, '0');
+    const secStr = sec.padStart(2, '0');
+    const wert = `${minStr}:${secStr}`;
+    
+    updateForm({ referenzzeit: wert });
+    
+    if (!validiereReferenzzeit(wert)) {
+      setReferenzzeitFehler('Format: MM:SS (z.B. 25:30 für 5K)');
+    } else {
+      setReferenzzeitFehler('');
+    }
+  }
+
+  // Parse existing referenzzeit to populate minutes/seconds when step changes
+  useEffect(() => {
+    if (step === 8 && form.referenzzeit) {
+      const parts = form.referenzzeit.split(':');
+      if (parts.length >= 2) {
+        setMinuten(parts[parts.length - 2] || '');
+        setSekunden(parts[parts.length - 1] || '');
+      }
+    } else if (step !== 8) {
+      setMinuten('');
+      setSekunden('');
+    }
+  }, [step, form.referenzzeit]);
 
   useEffect(() => {
     if (step !== 2 || form.stadtQuery.trim().length < 2) {
@@ -1077,15 +1133,35 @@ export default function OnboardingWizard() {
                 <option value="5k">5K</option>
                 <option value="10k">10K</option>
               </select>
-              <input
-                type="text"
-                value={form.referenzzeit}
-                onChange={handleReferenzzeitChange}
-                placeholder="z.B. 25:30"
-                inputMode="numeric"
-                autoComplete="off"
-                className="input-field flex-1"
-              />
+              <div className="flex items-center gap-1">
+                <input
+                  ref={minutenRef}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={minuten}
+                  onChange={handleMinutenChange}
+                  placeholder="MM"
+                  maxLength={2}
+                  autoComplete="off"
+                  className="input-field w-16 text-base"
+                  style={{ fontSize: '16px' }}
+                />
+                <span className="text-text font-bold text-base">:</span>
+                <input
+                  ref={sekundenRef}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={sekunden}
+                  onChange={handleSekundenChange}
+                  placeholder="SS"
+                  maxLength={2}
+                  autoComplete="off"
+                  className="input-field w-16 text-base"
+                  style={{ fontSize: '16px' }}
+                />
+              </div>
             </div>
             {referenzzeitFehler && (
               <p style={{ color: '#e63228', fontSize: '12px', marginTop: '6px' }}>
