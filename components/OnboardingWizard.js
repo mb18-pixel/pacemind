@@ -1349,7 +1349,7 @@ export default function OnboardingWizard() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-5rem)] flex-col">
+    <div className="flex min-h-[calc(100dvh-5rem)] flex-col">
       <div className="h-1 w-full bg-surface">
         <div
           className="h-full bg-accent transition-all duration-300 ease-in-out"

@@ -264,7 +264,7 @@ h2, .h2 {
 .app-body {
   max-width: 100vw;
   overflow-x: hidden;
-  min-height: calc(var(--vh, 1vh) * 100);
+  min-height: 100dvh;
 }
 
 /* ── Touch targets ── */
@@ -360,8 +360,8 @@ input, textarea {
 
 @media (max-width: 767px) {
   .chat-shell {
-    height: calc(var(--vh, 1vh) * 100 - 56px - 60px - env(safe-area-inset-bottom, 0px));
-    max-height: calc(var(--vh, 1vh) * 100 - 56px - 60px - env(safe-area-inset-bottom, 0px));
+    height: calc(100dvh - 56px - 60px - env(safe-area-inset-bottom, 0px));
+    max-height: calc(100dvh - 56px - 60px - env(safe-area-inset-bottom, 0px));
   }
 
   .chat-messages {
