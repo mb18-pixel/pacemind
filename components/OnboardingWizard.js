@@ -1129,10 +1129,10 @@ export default function OnboardingWizard() {
               </select>
               <div className="flex items-center gap-1">
                 <input
+                  key="minuten-input"
                   ref={minutenRef}
-                  type="text"
+                  type="tel"
                   inputMode="numeric"
-                  pattern="[0-9]*"
                   value={minuten}
                   onChange={handleMinutenChange}
                   placeholder="MM"
@@ -1143,10 +1143,10 @@ export default function OnboardingWizard() {
                 />
                 <span className="text-text font-bold text-base">:</span>
                 <input
+                  key="sekunden-input"
                   ref={sekundenRef}
-                  type="text"
+                  type="tel"
                   inputMode="numeric"
-                  pattern="[0-9]*"
                   value={sekunden}
                   onChange={handleSekundenChange}
                   placeholder="SS"
