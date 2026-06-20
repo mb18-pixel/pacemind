@@ -1357,7 +1357,7 @@ export default function OnboardingWizard() {
         />
       </div>
 
-      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-8">
+      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-8 pb-32">
         <div
           key={step}
           className={
@@ -1375,7 +1375,7 @@ export default function OnboardingWizard() {
           </p>
         )}
 
-        <div className="sticky bottom-0 mt-8 flex items-center justify-between gap-4 bg-bg py-4 border-t border-border/30 z-10 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="fixed bottom-0 left-0 right-0 mt-8 flex items-center justify-between gap-4 bg-bg py-4 border-t border-border/30 z-50 pb-[max(1rem,env(safe-area-inset-bottom))]">
           {step > 1 ? (
             <button
               type="button"
