@@ -22,10 +22,10 @@ function AnimatedHeadline() {
   return (
     <h1
       className="font-black tracking-tighter uppercase leading-[1.0] select-none text-center"
-      style={{ fontSize: "clamp(3rem, 8vw, 7rem)" }}
+      style={{ fontSize: "clamp(2.5rem, 7vw, 6rem)" }}
     >
       {/* Erste Zeile: Weiß */}
-      <span className="block whitespace-nowrap mb-2">
+      <span className="block mb-2">
         {line1Words.map((word, i) => (
           <span
             key={i}
@@ -54,7 +54,7 @@ function AnimatedHeadline() {
 }
 
 // ─── Scroll-Reveal Hook ─────────────────────────────────────────────────────
-function useScrollReveal(threshold = 0.15) {
+function useScrollReveal(threshold = 0.2) {
   const [visible, setVisible] = useState(false);
   const ref = useRef(null);
 
@@ -101,15 +101,15 @@ function StatCard({ value, suffix, label, icon: Icon, delay = 0 }) {
   return (
     <div
       ref={ref}
-      className={`flex flex-col items-center text-center rounded-xl border border-[#222] bg-[#111]/60 p-8 backdrop-blur-sm transition-all duration-700 ease-out hover:border-[#e63228]/30 ${
+      className={`flex flex-col items-center text-center rounded-xl border border-[#222] bg-[#111]/60 p-6 md:p-8 backdrop-blur-sm transition-all duration-700 ease-out hover:border-[#e63228]/30 ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
       }`}
       style={{ transitionDelay: `${delay}ms` }}
     >
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#e63228]/10">
+      <div className="mb-4 flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full bg-[#e63228]/10">
         <Icon size={26} className="text-[#e63228]" strokeWidth={2.5} />
       </div>
-      <div className="text-4xl font-black tracking-tight text-white">
+      <div className="text-3xl md:text-4xl font-black tracking-tight text-white">
         {count}
         <span className="text-[#e63228]">{suffix}</span>
       </div>
@@ -127,12 +127,12 @@ function FeatureCard({ icon: Icon, title, text, delay = 0 }) {
   return (
     <div
       ref={ref}
-      className={`flex flex-col rounded-xl border border-[#1f1f1f] bg-[#111]/70 p-7 backdrop-blur-sm transition-all duration-700 ease-out hover:border-[#e63228]/25 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(230,50,40,0.08)] ${
+      className={`flex flex-col rounded-xl border border-[#1f1f1f] bg-[#111]/70 p-5 md:p-7 backdrop-blur-sm transition-all duration-700 ease-out hover:border-[#e63228]/25 hover:-translate-y-1 hover:shadow-[0_8px_32px_rgba(230,50,40,0.08)] ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
       }`}
       style={{ transitionDelay: `${delay}ms` }}
     >
-      <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-[#e63228]/12">
+      <div className="mb-5 flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-lg bg-[#e63228]/12">
         <Icon size={22} className="text-[#e63228]" strokeWidth={2.5} />
       </div>
       <h3 className="mb-3 text-lg font-black uppercase tracking-tight text-white">
@@ -150,13 +150,13 @@ function StepCard({ number, title, text, delay = 0 }) {
   return (
     <div
       ref={ref}
-      className={`flex flex-col items-center p-6 text-center transition-all duration-700 ease-out ${
+      className={`flex flex-col items-center p-4 md:p-6 text-center transition-all duration-700 ease-out ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
       }`}
       style={{ transitionDelay: `${delay}ms` }}
     >
       <span className="mb-4 block font-black leading-none text-[#e63228]/20 select-none"
-        style={{ fontSize: "clamp(4rem, 10vw, 7rem)" }}>
+        style={{ fontSize: "clamp(3rem, 8vw, 6rem)" }}>
         {number}
       </span>
       <h3 className="mb-2 text-base font-black uppercase tracking-tight text-white">
@@ -219,12 +219,12 @@ function KeyDifferenceCard({ icon: Icon, title, text, delay = 0 }) {
   return (
     <div
       ref={ref}
-      className={`flex flex-col rounded-xl border border-[#1f1f1f] bg-[#111]/70 p-8 backdrop-blur-sm transition-all duration-700 ease-out hover:border-[#e63228]/25 ${
+      className={`flex flex-col rounded-xl border border-[#1f1f1f] bg-[#111]/70 p-6 md:p-8 backdrop-blur-sm transition-all duration-700 ease-out hover:border-[#e63228]/25 ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"
       }`}
       style={{ transitionDelay: `${delay}ms` }}
     >
-      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-xl bg-[#e63228]/12">
+      <div className="mb-6 flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded-xl bg-[#e63228]/12">
         <Icon size={28} className="text-[#e63228]" strokeWidth={2.5} />
       </div>
       <h3 className="mb-4 text-xl font-black uppercase tracking-tight text-white">
@@ -248,7 +248,7 @@ function QuoteSection() {
     >
       <div className="relative">
         <span
-          className="absolute -top-8 -left-4 text-[8rem] font-black text-[#e63228]/20 leading-none select-none"
+          className="absolute -top-6 -left-3 text-6xl md:text-[8rem] font-black text-[#e63228]/20 leading-none select-none"
           style={{ fontFamily: "serif" }}
         >
           "
@@ -340,15 +340,15 @@ export default function LandingPage() {
         {/* Animated red glowing background */}
         <div className="pointer-events-none absolute inset-0 select-none" style={{ zIndex: 10 }}>
           {/* Main center glow */}
-          <div className="glow-blob absolute bottom-[-10%] right-[-5%] h-[620px] w-[620px] rounded-full bg-[#e63228] blur-[160px]" />
+          <div className="glow-blob absolute bottom-[-10%] right-[-5%] h-[400px] w-[400px] md:h-[620px] md:w-[620px] rounded-full bg-[#e63228] blur-[120px] md:blur-[160px]" />
           {/* Secondary top-left ambient */}
-          <div className="absolute top-[-5%] left-[-8%] h-[380px] w-[380px] rounded-full bg-[#e63228]/6 blur-[120px]" />
+          <div className="absolute top-[-5%] left-[-8%] h-[250px] w-[250px] md:h-[380px] md:w-[380px] rounded-full bg-[#e63228]/6 blur-[80px] md:blur-[120px]" />
           {/* Subtle center */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-[#e63228]/5 blur-[100px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] md:h-[500px] md:w-[500px] rounded-full bg-[#e63228]/5 blur-[60px] md:blur-[100px]" />
         </div>
 
         {/* Content */}
-        <div className="relative flex flex-1 flex-col items-center justify-center px-4 pb-24 pt-28 text-center" style={{ zIndex: 10 }}>
+        <div className="relative flex flex-1 flex-col items-center justify-center px-4 pb-16 pt-20 md:pb-24 md:pt-28 text-center" style={{ zIndex: 10 }}>
           <AnimatedHeadline />
 
           <p
@@ -379,7 +379,7 @@ export default function LandingPage() {
         <button
           onClick={scrollDown}
           aria-label="Weiter scrollen"
-          className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 text-[#555] transition-colors hover:text-white focus:outline-none" style={{ zIndex: 10 }}
+          className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 px-4 py-3 text-[#555] transition-colors hover:text-white focus:outline-none" style={{ zIndex: 10 }}
         >
           <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Mehr</span>
           <ChevronDown className="h-5 w-5 text-[#e63228] bounce-slow" strokeWidth={2.5} />
@@ -389,7 +389,7 @@ export default function LandingPage() {
       {/* ══════════════════════════════════════════════════
           SECTION 3 – CHAT VERGLEICH
       ══════════════════════════════════════════════════ */}
-      <section className="border-t border-[#1a1a1a] bg-[#0a0a0a] px-4 py-24">
+      <section className="border-t border-[#1a1a1a] bg-[#0a0a0a] px-4 py-16 md:py-24">
         <div className="mx-auto max-w-5xl">
           <div className="mb-16 text-center">
             <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-white mb-4">
@@ -442,7 +442,7 @@ export default function LandingPage() {
       {/* ══════════════════════════════════════════════════
           SECTION 4 – DREI KERNUNTERSCHIEDE
       ══════════════════════════════════════════════════ */}
-      <section className="border-t border-[#1a1a1a] bg-[#0d0d0d] px-4 py-24">
+      <section className="border-t border-[#1a1a1a] bg-[#0d0d0d] px-4 py-16 md:py-24">
         <div className="mx-auto max-w-5xl">
           <div className="mb-16 text-center">
             <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-white mb-4">
@@ -450,7 +450,7 @@ export default function LandingPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 md:gap-8 md:grid-cols-3">
             <KeyDifferenceCard
               icon={Brain}
               title="Herkömmliche KIs haben kein Gedächtnis."
@@ -476,7 +476,7 @@ export default function LandingPage() {
       {/* ══════════════════════════════════════════════════
           SECTION 5 – SOCIAL PROOF QUOTE
       ══════════════════════════════════════════════════ */}
-      <section className="border-t border-[#1a1a1a] bg-[#0a0a0a] px-4 py-24">
+      <section className="border-t border-[#1a1a1a] bg-[#0a0a0a] px-4 py-16 md:py-24">
         <div className="mx-auto max-w-5xl">
           <QuoteSection />
         </div>
@@ -487,7 +487,7 @@ export default function LandingPage() {
       ══════════════════════════════════════════════════ */}
       <section
         id="stats-section"
-        className="border-t border-[#1a1a1a] bg-[#0d0d0d] px-4 py-24 scroll-mt-20"
+        className="border-t border-[#1a1a1a] bg-[#0d0d0d] px-4 py-16 md:py-24 scroll-mt-20"
       >
         <div className="mx-auto max-w-5xl">
           <p className="mb-14 text-center text-xs font-bold uppercase tracking-[0.25em] text-[#e63228]">
@@ -504,7 +504,7 @@ export default function LandingPage() {
       {/* ══════════════════════════════════════════════════
           SECTION 7 – FEATURES
       ══════════════════════════════════════════════════ */}
-      <section className="border-t border-[#1a1a1a] px-4 py-24">
+      <section className="border-t border-[#1a1a1a] px-4 py-16 md:py-24">
         <div className="mx-auto max-w-5xl">
           <div className="mb-16 text-center">
             <h2 className="text-3xl font-black uppercase tracking-tight text-white md:text-4xl">
@@ -514,7 +514,7 @@ export default function LandingPage() {
               Moderne KI trifft auf Sportwissenschaft – für smartes, effizientes Training.
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:gap-6 md:grid-cols-3">
             <FeatureCard
               icon={Activity}
               title="Dein Plan. Dein Tempo."
@@ -540,7 +540,7 @@ export default function LandingPage() {
       {/* ══════════════════════════════════════════════════
           SECTION 8 – HOW IT WORKS
       ══════════════════════════════════════════════════ */}
-      <section className="border-t border-[#1a1a1a] bg-[#0d0d0d] px-4 py-24">
+      <section className="border-t border-[#1a1a1a] bg-[#0d0d0d] px-4 py-16 md:py-24">
         <div className="mx-auto max-w-5xl">
           <div className="mb-16 text-center">
             <h2 className="text-3xl font-black uppercase tracking-tight text-white md:text-4xl">
@@ -564,9 +564,9 @@ export default function LandingPage() {
       {/* ══════════════════════════════════════════════════
           SECTION 9 – CTA
       ══════════════════════════════════════════════════ */}
-      <section className="border-t border-[#1a1a1a] px-4 pb-32 pt-24">
+      <section className="border-t border-[#1a1a1a] px-4 pb-20 pt-16 md:pb-32 md:pt-24">
         <div className="mx-auto max-w-4xl">
-          <div className="relative overflow-hidden rounded-2xl border border-[#e63228]/20 bg-[#0f0f0f] p-10 text-center shadow-[0_0_80px_rgba(230,50,40,0.07)] md:p-20">
+          <div className="relative overflow-hidden rounded-2xl border border-[#e63228]/20 bg-[#0f0f0f] p-6 text-center shadow-[0_0_80px_rgba(230,50,40,0.07)] md:p-10 md:py-10">
             {/* Inner glow */}
             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#e63228]/40 to-transparent" />
             <div className="pointer-events-none absolute -top-1/2 left-1/2 -translate-x-1/2 h-[400px] w-[400px] rounded-full bg-[#e63228]/7 blur-[100px]" />
@@ -593,11 +593,11 @@ export default function LandingPage() {
               </div>
 
               <div className="mt-12 flex items-center justify-center gap-6 text-[11px] font-bold uppercase tracking-widest text-[#444]">
-                <Link href="/impressum" className="transition-colors hover:text-[#e63228]">
+                <Link href="/impressum" className="px-3 py-2 transition-colors hover:text-[#e63228]">
                   Impressum
                 </Link>
                 <span className="h-3 w-px bg-[#2a2a2a]" />
-                <Link href="/datenschutz" className="transition-colors hover:text-[#e63228]">
+                <Link href="/datenschutz" className="px-3 py-2 transition-colors hover:text-[#e63228]">
                   Datenschutz
                 </Link>
               </div>
@@ -613,11 +613,11 @@ export default function LandingPage() {
         <div className="mx-auto max-w-5xl">
           <div className="flex flex-col items-center gap-4 text-center">
             <div className="flex items-center gap-6 text-[11px] font-bold uppercase tracking-widest text-[#444]">
-              <Link href="/impressum" className="transition-colors hover:text-[#e63228]">
+              <Link href="/impressum" className="px-3 py-2 transition-colors hover:text-[#e63228]">
                 Impressum
               </Link>
               <span className="h-3 w-px bg-[#2a2a2a]" />
-              <Link href="/datenschutz" className="transition-colors hover:text-[#e63228]">
+              <Link href="/datenschutz" className="px-3 py-2 transition-colors hover:text-[#e63228]">
                 Datenschutz
               </Link>
             </div>
