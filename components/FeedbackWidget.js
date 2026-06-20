@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function FeedbackWidget() {
+  const pathname = usePathname();
   const [offen, setOffen] = useState(false);
   const [nachricht, setNachricht] = useState("");
   const [gesendet, setGesendet] = useState(false);
@@ -18,6 +20,10 @@ export default function FeedbackWidget() {
       }
     };
   }, []);
+
+  if (pathname.startsWith('/onboarding')) {
+    return null;
+  }
 
   async function handleSenden() {
     if (!nachricht.trim() || laden) return;
@@ -60,7 +66,7 @@ export default function FeedbackWidget() {
         position: "fixed",
         bottom: "24px",
         right: "24px",
-        zIndex: 1000,
+        zIndex: 30,
         display: "flex",
         flexDirection: "column",
         alignItems: "flex-end",
