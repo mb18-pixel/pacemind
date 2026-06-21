@@ -1359,6 +1359,7 @@ export default function OnboardingWizard() {
                             Von
                           </label>
                           <input
+                            key={`start-${index}-${form.slots[index].verfuegbar}`}
                             type="time"
                             value={form.slots[index].uhrzeit_start}
                             onChange={(e) => {
@@ -1377,6 +1378,7 @@ export default function OnboardingWizard() {
                             Bis
                           </label>
                           <input
+                            key={`end-${index}-${form.slots[index].verfuegbar}`}
                             type="time"
                             value={form.slots[index].uhrzeit_ende}
                             onChange={(e) => {
