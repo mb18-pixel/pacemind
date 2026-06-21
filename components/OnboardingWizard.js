@@ -153,11 +153,21 @@ function estimateVDOT(frequenz, fitness) {
   return 35; 
 }
 
-function calculateImprovement(weeks) {
-  if (weeks <= 4) return 2;
-  if (weeks <= 8) return 4;
-  if (weeks <= 16) return 7;
-  return 10;
+function calculateImprovement(weeks, currentVdot = 35) {
+  // Base improvement based on time
+  let baseImprovement;
+  if (weeks <= 4) baseImprovement = 2;
+  else if (weeks <= 8) baseImprovement = 4;
+  else if (weeks <= 16) baseImprovement = 7;
+  else baseImprovement = 10;
+
+  // Adjust based on current fitness level
+  // Lower VDOT (beginners) can improve more, higher VDOT (advanced) improve less
+  // VDOT range: 28-60
+  const vdotFactor = (60 - currentVdot) / (60 - 28); // 1.0 for beginners, 0.0 for elite
+  const adjustedImprovement = baseImprovement * (0.5 + 0.5 * vdotFactor); // Min 50% of base
+
+  return Math.round(adjustedImprovement);
 }
 
 function getZielzeit(vdot, distanz) {
@@ -320,7 +330,8 @@ export default function OnboardingWizard() {
   }, [form.stadtQuery, step]);
 
   useEffect(() => {
-    if (step !== 9 || form.zielzeit || customGoalMode) return;
+    if (step !== 9 || customGoalMode) return;
+    if (form.zielzeit && !form.zielzeitBerechnet) return; // Nutzer hat manuell editiert, nicht überschreiben
 
     let computedVdot = 35;
     if (form.referenzzeit) {
@@ -335,7 +346,7 @@ export default function OnboardingWizard() {
       weeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
     }
 
-    const improvement = calculateImprovement(weeks);
+    const improvement = calculateImprovement(weeks, computedVdot);
     const targetVdot = computedVdot + improvement;
     const goalDist = ["5k", "10k", "halbmarathon", "marathon"].includes(form.ziel)
       ? form.ziel
@@ -1199,7 +1210,7 @@ export default function OnboardingWizard() {
           weeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
         }
         
-        const improvement = calculateImprovement(weeks);
+        const improvement = calculateImprovement(weeks, computedVdot);
         const targetVdot = computedVdot + improvement;
         
         // Ensure we calculate time based on goal if it matches
