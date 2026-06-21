@@ -132,7 +132,7 @@ function ShareCardContent({ run, quote }) {
     <div
       style={{
         width: 1080,
-        height: 1080,
+        height: 1920,
         background: "#0a0a0a",
         color: "#ffffff",
         fontFamily: "system-ui, -apple-system, sans-serif",
@@ -169,62 +169,62 @@ function ShareCardContent({ run, quote }) {
         </p>
       </div>
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 32 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 24, textAlign: "center" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", gap: 48 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 32, textAlign: "center" }}>
           <div>
-            <p style={{ margin: 0, fontSize: 22, color: "#888", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            <p style={{ margin: 0, fontSize: 28, color: "#888", textTransform: "uppercase", letterSpacing: "0.1em" }}>
               Distanz
             </p>
-            <p style={{ margin: "12px 0 0", fontSize: 72, fontWeight: 900, lineHeight: 1 }}>
+            <p style={{ margin: "16px 0 0", fontSize: 96, fontWeight: 900, lineHeight: 1 }}>
               {run.distanceKm}
-              <span style={{ fontSize: 32, color: "#888", marginLeft: 8 }}>km</span>
+              <span style={{ fontSize: 42, color: "#888", marginLeft: 10 }}>km</span>
             </p>
           </div>
           <div>
-            <p style={{ margin: 0, fontSize: 22, color: "#888", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            <p style={{ margin: 0, fontSize: 28, color: "#888", textTransform: "uppercase", letterSpacing: "0.1em" }}>
               Pace
             </p>
-            <p style={{ margin: "12px 0 0", fontSize: 56, fontWeight: 900, lineHeight: 1 }}>
+            <p style={{ margin: "16px 0 0", fontSize: 72, fontWeight: 900, lineHeight: 1 }}>
               {formatPace(run.paceMin, run.paceSec)}
             </p>
           </div>
           <div>
-            <p style={{ margin: 0, fontSize: 22, color: "#888", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            <p style={{ margin: 0, fontSize: 28, color: "#888", textTransform: "uppercase", letterSpacing: "0.1em" }}>
               Dauer
             </p>
-            <p style={{ margin: "12px 0 0", fontSize: 56, fontWeight: 900, lineHeight: 1 }}>
+            <p style={{ margin: "16px 0 0", fontSize: 72, fontWeight: 900, lineHeight: 1 }}>
               {formatDuration(run)}
             </p>
           </div>
         </div>
 
         {hfLine && (
-          <p style={{ margin: 0, textAlign: "center", fontSize: 28, color: "#e63228", fontWeight: 700 }}>
+          <p style={{ margin: 0, textAlign: "center", fontSize: 36, color: "#e63228", fontWeight: 700 }}>
             {hfLine}
           </p>
         )}
 
-        <p style={{ margin: 0, textAlign: "center", fontSize: 24, color: "#666" }}>
+        <p style={{ margin: 0, textAlign: "center", fontSize: 28, color: "#666" }}>
           {formatCardDate(run.date)}
         </p>
 
         <p
           style={{
-            margin: "16px 0 0",
+            margin: "24px 0 0",
             textAlign: "center",
-            fontSize: 30,
+            fontSize: 36,
             lineHeight: 1.5,
             color: "#ccc",
             fontStyle: "italic",
-            padding: "0 24px",
+            padding: "0 32px",
           }}
         >
-          „{quote}"
+          "{quote}"
         </p>
       </div>
 
-      <p style={{ margin: 0, textAlign: "center", fontSize: 20, color: "#444", letterSpacing: "0.05em" }}>
-        ascend.vercel.app
+      <p style={{ margin: 0, textAlign: "center", fontSize: 22, color: "#444", letterSpacing: "0.05em" }}>
+        ascend-training-ai.vercel.app
       </p>
     </div>
   );
@@ -262,7 +262,7 @@ export function ShareRunButton({ run }) {
 
       const dataUrl = await toPng(cardRef.current, {
         width: 1080,
-        height: 1080,
+        height: 1920,
         pixelRatio: 1,
         cacheBust: true,
       });
