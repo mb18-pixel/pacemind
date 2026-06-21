@@ -248,6 +248,94 @@ async function regeneratePlan(userId, supabase, { simulatedTodayIso = null } = {
   return { type: "plan_replanned", data };
 }
 
+// Whitelist der erlaubten Profilfelder für update_profile über den Chat
+const ALLOWED_PROFILE_FIELDS = [
+  "vorname",
+  "geschlecht",
+  "koerperfettanteil",
+  "fitnesslevel",
+  "hauptziel",
+  "ziel_datum",
+  "zielzeit",
+  "zielpace",
+  "zieldistanz",
+  "aktuelle_trainingsfrequenz",
+  "aktuelle_distanz",
+  "referenzzeit_5k",
+  "referenzzeit_10k",
+  "stadt",
+  "latitude",
+  "longitude",
+];
+
+// NIEMALS erlaubte Felder (Sicherheitsrelevante/System-Felder)
+const FORBIDDEN_FIELDS = [
+  "id",
+  "email",
+  "alter_jahre",
+  "nachrichten_limit",
+  "onboarding_abgeschlossen",
+  "nachrichten_heute",
+  "nachrichten_reset_datum",
+  "makro_skelett",
+];
+
+function validateTimeFormat(value) {
+  if (!value || value.trim() === "") return true; // optional
+  const pattern = /^\d{1,2}:\d{2}(:\d{2})?$/;
+  return pattern.test(value.trim());
+}
+
+function validateAndFilterProfileData(data) {
+  const filteredData = {};
+  const ignoredFields = [];
+
+  for (const [key, value] of Object.entries(data || {})) {
+    // Prüfe ob Feld in Whitelist
+    if (!ALLOWED_PROFILE_FIELDS.includes(key)) {
+      ignoredFields.push({ field: key, reason: "not_in_whitelist" });
+      continue;
+    }
+
+    // Prüfe ob Feld in Forbidden-Liste (doppelter Sicherheitscheck)
+    if (FORBIDDEN_FIELDS.includes(key)) {
+      ignoredFields.push({ field: key, reason: "forbidden_field" });
+      continue;
+    }
+
+    // Plausibilitätsprüfungen
+    if (key === "koerperfettanteil" && value !== null && value !== undefined) {
+      const numValue = Number(value);
+      if (isNaN(numValue) || numValue < 3 || numValue > 60) {
+        ignoredFields.push({ field: key, reason: "invalid_range", expected: "3-60" });
+        continue;
+      }
+    }
+
+    if (key === "ziel_datum" && value) {
+      const targetDate = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (targetDate <= today) {
+        ignoredFields.push({ field: key, reason: "date_in_past" });
+        continue;
+      }
+    }
+
+    if (["zielzeit", "referenzzeit_5k", "referenzzeit_10k"].includes(key)) {
+      if (!validateTimeFormat(value)) {
+        ignoredFields.push({ field: key, reason: "invalid_time_format", expected: "MM:SS or HH:MM:SS" });
+        continue;
+      }
+    }
+
+    // Feld ist gültig
+    filteredData[key] = value;
+  }
+
+  return { filteredData, ignoredFields };
+}
+
 async function executeAction(action, data, userId, supabase, { simulatedTodayIso = null } = {}) {
   if (action === "update_single_day") {
     const updateResult = await supabase.from("training_plan").upsert(
@@ -295,8 +383,16 @@ async function executeAction(action, data, userId, supabase, { simulatedTodayIso
   }
 
   if (action === "update_profile") {
-    await supabase.from("profiles").update(data).eq("id", userId);
-    return { type: "profile_updated" };
+    const { filteredData, ignoredFields } = validateAndFilterProfileData(data);
+    
+    if (Object.keys(filteredData).length > 0) {
+      await supabase.from("profiles").update(filteredData).eq("id", userId);
+    }
+    
+    return { 
+      type: "profile_updated",
+      ignoredFields: ignoredFields.length > 0 ? ignoredFields : undefined 
+    };
   }
 
   if (action === "log_run") {

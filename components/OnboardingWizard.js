@@ -129,6 +129,12 @@ function timeToSeconds(timeStr) {
   return 0;
 }
 
+function timeOfDayToMinutes(timeStr) {
+  if (!timeStr) return 0;
+  const [hours, minutes] = timeStr.split(":").map(Number);
+  return (hours || 0) * 60 + (minutes || 0);
+}
+
 function getVdotFromReference(distanz, timeStr) {
   const mapping = VDOT_MAPPING[distanz];
   if (!mapping) return 35;
@@ -445,9 +451,9 @@ export default function OnboardingWizard() {
           if (slot.uhrzeit_start >= slot.uhrzeit_ende) {
             return "Die Endzeit muss nach der Startzeit liegen.";
           }
-          const startSec = timeToSeconds(slot.uhrzeit_start);
-          const endSec = timeToSeconds(slot.uhrzeit_ende);
-          const durationMin = (endSec - startSec) / 60;
+          const startMin = timeOfDayToMinutes(slot.uhrzeit_start);
+          const endMin = timeOfDayToMinutes(slot.uhrzeit_ende);
+          const durationMin = endMin - startMin;
           if (durationMin < 30) {
             return "Das Zeitfenster muss mindestens 30 Minuten betragen.";
           }
