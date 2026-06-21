@@ -268,13 +268,38 @@ export function ShareRunButton({ run }) {
       });
 
       const datum = new Date(run.date).toISOString().split("T")[0];
-      const link = document.createElement("a");
-      link.download = `ascend-lauf-${datum}.png`;
-      link.href = dataUrl;
-      link.click();
-
-      setStatus("saved");
-      setTimeout(() => setStatus("idle"), 3000);
+      
+      // Convert dataUrl to Blob, then to File
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `ascend-lauf-${datum}.png`, { type: "image/png" });
+      
+      // Try Web Share API with file support
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: "Mein Lauf",
+            text: `Mein Lauf vom ${formatCardDate(run.date)}: ${run.distanceKm}km in ${formatPace(run.paceMin, run.paceSec)}/km`,
+          });
+          setStatus("saved");
+          setTimeout(() => setStatus("idle"), 3000);
+        } catch (shareErr) {
+          // AbortError means user cancelled - normal behavior, no error message
+          if (shareErr.name !== "AbortError") {
+            console.error("Share API Fehler:", shareErr);
+          }
+          setStatus("idle");
+        }
+      } else {
+        // Fallback: classic download for browsers without Share API
+        const link = document.createElement("a");
+        link.download = `ascend-lauf-${datum}.png`;
+        link.href = dataUrl;
+        link.click();
+        setStatus("saved");
+        setTimeout(() => setStatus("idle"), 3000);
+      }
     } catch (err) {
       console.error("Share-Karte Fehler:", err);
       setStatus("idle");
