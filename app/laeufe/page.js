@@ -55,6 +55,11 @@ export default function LaeufePage() {
   }, []);
 
   async function handleDismissModal() {
+    // Modal sofort schließen, UI nicht auf Netzwerk warten lassen
+    setShowWelcomeModal(false);
+    // Fokus sauber zurücksetzen, um Touch-Event-Probleme zu vermeiden
+    document.activeElement?.blur();
+    
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -64,8 +69,6 @@ export default function LaeufePage() {
         .update({ laeufe_hinweis_gesehen: true })
         .eq("id", user.id);
     }
-
-    setShowWelcomeModal(false);
   }
 
   async function handleDelete(id) {
