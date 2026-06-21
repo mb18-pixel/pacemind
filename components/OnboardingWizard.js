@@ -445,6 +445,12 @@ export default function OnboardingWizard() {
           if (slot.uhrzeit_start >= slot.uhrzeit_ende) {
             return "Die Endzeit muss nach der Startzeit liegen.";
           }
+          const startSec = timeToSeconds(slot.uhrzeit_start);
+          const endSec = timeToSeconds(slot.uhrzeit_ende);
+          const durationMin = (endSec - startSec) / 60;
+          if (durationMin < 30) {
+            return "Das Zeitfenster muss mindestens 30 Minuten betragen.";
+          }
         }
         return null;
       }

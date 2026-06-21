@@ -49,8 +49,16 @@ export async function POST(request) {
       sportArt,
     } = body;
 
+    const distance = Number(distanceKm);
+    if (distance < 1) {
+      return Response.json(
+        { error: "Die Distanz muss mindestens 1 km betragen." },
+        { status: 400 }
+      );
+    }
+
     const run = await insertRun(supabase, user.id, {
-      distanz_km: Number(distanceKm),
+      distanz_km: distance,
       pace: paceToString(paceMin, paceSec),
       herzfrequenz: heartRateAvg ? Number(heartRateAvg) : null,
       herzfrequenz_max: heartRateMax ? Number(heartRateMax) : null,

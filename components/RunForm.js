@@ -21,6 +21,11 @@ export default function RunForm({ onSaved }) {
     setLoading(true);
 
     try {
+      const distance = Number(distanceKm);
+      if (distance < 1) {
+        throw new Error("Die Distanz muss mindestens 1 km betragen.");
+      }
+
       const res = await fetch("/api/runs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
