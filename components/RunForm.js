@@ -26,6 +26,22 @@ export default function RunForm({ onSaved }) {
         throw new Error("Die Distanz muss mindestens 1 km betragen.");
       }
 
+      const paceMinNum = Number(paceMin);
+      const paceSecNum = Number(paceSec);
+      const paceInMinutes = paceMinNum + paceSecNum / 60;
+
+      if (paceInMinutes < 2.25) {
+        throw new Error("Diese Pace scheint unrealistisch schnell zu sein — bitte überprüfe deine Eingabe.");
+      }
+      if (paceInMinutes > 12) {
+        throw new Error("Diese Pace scheint unrealistisch langsam zu sein — bitte überprüfe deine Eingabe.");
+      }
+
+      const durationMinutes = distance * paceInMinutes;
+      if (durationMinutes > 720) {
+        throw new Error("Die Gesamtdauer ist zu lang — maximal 12 Stunden pro Eintrag.");
+      }
+
       const res = await fetch("/api/runs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

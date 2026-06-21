@@ -57,6 +57,31 @@ export async function POST(request) {
       );
     }
 
+    const paceMinNum = Number(paceMin);
+    const paceSecNum = Number(paceSec);
+    const paceInMinutes = paceMinNum + paceSecNum / 60;
+
+    if (paceInMinutes < 2.25) {
+      return Response.json(
+        { error: "Diese Pace scheint unrealistisch schnell zu sein — bitte überprüfe deine Eingabe." },
+        { status: 400 }
+      );
+    }
+    if (paceInMinutes > 12) {
+      return Response.json(
+        { error: "Diese Pace scheint unrealistisch langsam zu sein — bitte überprüfe deine Eingabe." },
+        { status: 400 }
+      );
+    }
+
+    const durationMinutes = distance * paceInMinutes;
+    if (durationMinutes > 720) {
+      return Response.json(
+        { error: "Die Gesamtdauer ist zu lang — maximal 12 Stunden pro Eintrag." },
+        { status: 400 }
+      );
+    }
+
     const run = await insertRun(supabase, user.id, {
       distanz_km: distance,
       pace: paceToString(paceMin, paceSec),
