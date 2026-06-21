@@ -223,7 +223,7 @@ function ShareCardContent({ run, quote }) {
         </p>
       </div>
 
-      <p style={{ margin: 0, textAlign: "center", fontSize: 22, color: "#444", letterSpacing: "0.05em" }}>
+      <p style={{ margin: 0, textAlign: "center", fontSize: 26, color: "#555", letterSpacing: "0.05em" }}>
         ascend-training-ai.vercel.app
       </p>
     </div>
