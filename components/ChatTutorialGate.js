@@ -18,7 +18,7 @@ const STEPS = [
   {
     key: "laeufe",
     target: '[data-tutorial="nav-laeufe"]',
-    text: `Nach jedem Training hier eintragen –\noder einfach dem Coach sagen:\n'Ich habe heute 8km in 5:30 gelaufen'`,
+    text: `Nach jedem Training hier eintragen –\noder einfach dem Coach sagen:\n'Ich bin heute 8km in 5:30 gelaufen'`,
   },
   {
     key: "zeiten",
