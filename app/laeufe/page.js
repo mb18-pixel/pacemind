@@ -4,10 +4,13 @@ import { useCallback, useEffect, useState } from "react";
 import { Footprints } from "lucide-react";
 import RunForm from "@/components/RunForm";
 import RunHistory from "@/components/RunHistory";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LaeufePage() {
   const [runs, setRuns] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [modalChecked, setModalChecked] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
@@ -25,6 +28,45 @@ export default function LaeufePage() {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    async function checkHintStatus() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        setModalChecked(true);
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("laeufe_hinweis_gesehen")
+        .eq("id", user.id)
+        .single();
+
+      if (profile && !profile.laeufe_hinweis_gesehen) {
+        setShowWelcomeModal(true);
+      }
+      setModalChecked(true);
+    }
+
+    checkHintStatus();
+  }, []);
+
+  async function handleDismissModal() {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user) {
+      await supabase
+        .from("profiles")
+        .update({ laeufe_hinweis_gesehen: true })
+        .eq("id", user.id);
+    }
+
+    setShowWelcomeModal(false);
+  }
 
   async function handleDelete(id) {
     const res = await fetch(`/api/runs/${id}`, { method: "DELETE" });
@@ -58,6 +100,30 @@ export default function LaeufePage() {
           <RunHistory runs={runs} onDelete={handleDelete} />
         )}
       </section>
+
+      {showWelcomeModal && (
+        <div className="modal-overlay" style={{ zIndex: 50 }}>
+          <div className="bottom-sheet">
+            <div className="bottom-sheet-handle" />
+            <div className="px-4 pb-6">
+              <h2 className="mb-4 text-lg font-extrabold uppercase tracking-tight text-text">
+                Kurz und ehrlich, bevor du loslegst:
+              </h2>
+              <p className="mb-6 text-sm leading-relaxed text-text-muted">
+                Wir bauen Ascend gerade noch zusammen. Diese Seite hier zeigt deine Läufe – im Moment noch von Hand eingetragen, weil wir die Garmin- und Strava-Integration erst noch fertigstellen. Versprochen: Die kommt.
+                Bis dahin freuen wir uns über jeden Lauf, den du hier festhältst – und über jedes Feedback, das du uns gibst. Du hilfst uns damit, Ascend genau für Läufer wie dich zu bauen.
+              </p>
+              <button
+                type="button"
+                onClick={handleDismissModal}
+                className="btn-primary w-full"
+              >
+                Verstanden, los geht's
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
