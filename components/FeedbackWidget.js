@@ -14,6 +14,12 @@ export default function FeedbackWidget() {
   const timeoutRef = useRef(null);
 
   useEffect(() => {
+    const handler = () => setOffen(true);
+    window.addEventListener('ascend:open-feedback', handler);
+    return () => window.removeEventListener('ascend:open-feedback', handler);
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);

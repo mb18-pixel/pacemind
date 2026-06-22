@@ -186,7 +186,7 @@ export default function Navbar() {
                 type="button"
                 onClick={() => {
                   setMoreOpen(false);
-                  document.querySelector('[aria-label="Feedback öffnen"]')?.click();
+                  window.dispatchEvent(new Event('ascend:open-feedback'));
                 }}
                 className="touch-target flex items-center gap-3 rounded-md px-3 py-3 text-sm font-semibold text-text hover:bg-surface-elevated w-full text-left"
               >

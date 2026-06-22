@@ -18,6 +18,9 @@ export default function ImpressumPage() {
       <p className="mt-6 text-sm leading-relaxed text-text-muted">
         Diese Seite kannst du später mit deinen rechtlichen Angaben füllen.
       </p>
+      <p className="mt-4 text-sm leading-relaxed text-text-muted">
+        Kontakt: <a href="mailto:mail.ascend@gmx.de" className="text-accent hover:underline">mail.ascend@gmx.de</a>
+      </p>
       <p className="mt-4 text-xs font-semibold uppercase tracking-widest text-accent">
         PerformanceProtokoll
       </p>
