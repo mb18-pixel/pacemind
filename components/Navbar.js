@@ -182,6 +182,17 @@ export default function Navbar() {
               </button>
             </div>
             <div className="flex flex-col gap-1 px-4 pb-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setMoreOpen(false);
+                  document.querySelector('[aria-label="Feedback öffnen"]')?.click();
+                }}
+                className="touch-target flex items-center gap-3 rounded-md px-3 py-3 text-sm font-semibold text-text hover:bg-surface-elevated w-full text-left"
+              >
+                <MessageSquare size={18} />
+                Feedback geben
+              </button>
               <Link
                 href="/impressum"
                 onClick={() => setMoreOpen(false)}

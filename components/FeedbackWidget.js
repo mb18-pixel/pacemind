@@ -73,6 +73,23 @@ export default function FeedbackWidget() {
         gap: "8px",
       }}
     >
+      <button
+        onClick={() => setOffen(!offen)}
+        aria-label="Feedback öffnen"
+        style={{
+          background: "#e63228",
+          color: "#fff",
+          border: "none",
+          borderRadius: "8px",
+          padding: "10px 16px",
+          fontSize: "13px",
+          fontWeight: "600",
+          cursor: "pointer",
+          transition: "background 0.2s ease",
+        }}
+      >
+        Feedback
+      </button>
       <div
         aria-hidden={!offen}
         style={{
