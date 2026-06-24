@@ -15,8 +15,11 @@ import {
   generateMicrocycleForDates,
   skelettIstGueltig,
 } from "@/lib/training-engine";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const MODEL = "llama-3.3-70b-versatile";
+const GROQ_PRIMARY_MODEL = "llama-3.3-70b-versatile";
+const GROQ_FALLBACK_MODEL = "llama-3.1-8b-instant";
+const GEMINI_MODEL = "gemini-3.5-flash";
 
 // Globales App-Tageslimit als Sicherheitsnetz gegen Bots/Bugs/Überlastung
 // Dieser Wert sollte je nach Groq-Tagesbudget angepasst werden
@@ -42,6 +45,77 @@ function extractTextFromResponse(content) {
         .replace(/\{[\s\S]*?\}/g, "")
         .trim() || safeContent
     );
+  }
+}
+
+async function callGroq(apiKey, model, messages) {
+  const groq = new Groq({ apiKey });
+  const completion = await groq.chat.completions.create({
+    model,
+    messages,
+    response_format: { type: "json_object" },
+    temperature: 0.7,
+    max_tokens: 1000,
+  });
+  return completion.choices[0]?.message?.content || "Keine Antwort";
+}
+
+async function callGemini(apiKey, systemInstruction, messages) {
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({
+    model: GEMINI_MODEL,
+    systemInstruction: systemInstruction
+  });
+  const contents = messages
+    .filter(m => m.role !== "system")
+    .map(m => ({
+      role: m.role === "user" ? "user" : "model",
+      parts: [{ text: m.content }]
+    }));
+  const result = await model.generateContent({ contents });
+  return result.response.text() || "Keine Antwort";
+}
+
+async function callAIWithFallback(groqApiKey, geminiApiKey, systemInstruction, messages) {
+  const groqMessages = [
+    { role: "system", content: systemInstruction },
+    ...messages.map(m => ({
+      role: m.role === "user" ? "user" : "assistant",
+      content: m.content,
+    })),
+  ];
+
+  // Versuch 1: Groq Primary
+  try {
+    console.log("[AI] Attempting Groq primary:", GROQ_PRIMARY_MODEL);
+    const response = await callGroq(groqApiKey, GROQ_PRIMARY_MODEL, groqMessages);
+    console.log("[AI] Using Groq primary");
+    return { response, provider: "groq-primary" };
+  } catch (error) {
+    console.log("[AI] Groq primary failed:", error.message);
+  }
+
+  // Versuch 2: Gemini Fallback
+  if (geminiApiKey) {
+    try {
+      console.log("[AI] Attempting Gemini fallback");
+      const response = await callGemini(geminiApiKey, systemInstruction, messages);
+      console.log("[AI] Using Gemini fallback");
+      return { response, provider: "gemini-fallback" };
+    } catch (error) {
+      console.log("[AI] Gemini fallback failed:", error.message);
+    }
+  }
+
+  // Versuch 3: Groq kleineres Modell
+  try {
+    console.log("[AI] Attempting Groq fallback:", GROQ_FALLBACK_MODEL);
+    const response = await callGroq(groqApiKey, GROQ_FALLBACK_MODEL, groqMessages);
+    console.log("[AI] Using Groq fallback");
+    return { response, provider: "groq-fallback" };
+  } catch (error) {
+    console.log("[AI] All providers failed:", error.message);
+    throw new Error("Ascend ist gerade sehr gefragt. Bitte versuche es in wenigen Minuten erneut.");
   }
 }
 
@@ -614,28 +688,23 @@ export async function POST(request) {
       extraContextPayload
     );
 
-    const groqMessages = [
-      { role: "system", content: systemInstruction },
-      ...messages.map((m) => ({
-        role: m.role === "user" ? "user" : "assistant",
-        content: m.content,
-      })),
-    ];
+    const geminiApiKey = process.env.GEMINI_API_KEY;
 
-    const groq = new Groq({ apiKey });
-    const completion = await groq.chat.completions.create({
-      model: MODEL,
-      messages: groqMessages,
-      response_format: { type: "json_object" },
-      temperature: 0.7,
-      max_tokens: 1000,
-    });
-
-    const result = completion;
-    const aiResponse =
-      result.choices[0]?.message?.content ||
-      result.content?.[0]?.text ||
-      "Keine Antwort";
+    let aiResponse;
+    try {
+      const { response } = await callAIWithFallback(
+        apiKey,
+        geminiApiKey,
+        systemInstruction,
+        messages
+      );
+      aiResponse = response;
+    } catch (fallbackError) {
+      return Response.json(
+        { error: fallbackError.message },
+        { status: 500 }
+      );
+    }
 
     let responseText = extractTextFromResponse(aiResponse);
     let action = null;
