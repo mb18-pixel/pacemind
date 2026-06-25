@@ -14,6 +14,19 @@ const QUICK_REPLIES = [
   "Ich bin müde heute",
 ];
 
+const THINKING_TEXTS = [
+  "Analysiert deinen Plan ...",
+  "Liest deine Läufe ...",
+  "Prüft das Wetter ...",
+  "Plant dein Training ...",
+  "Berechnet deine Pace ...",
+  "Optimiert deinen Trainingsplan ...",
+  "Schaut in deinen Kalender ...",
+  "Denkt nach ...",
+  "Bereitet Empfehlungen vor ...",
+  "Prüft deine Fortschritte ...",
+];
+
 export const PLAN_UPDATED_EVENT = "ascend-plan-updated";
 
 function formatTime(date) {
@@ -37,6 +50,7 @@ export default function ChatInterface({ initialPrompt = null }) {
   const [nachrichtenInfo, setNachrichtenInfo] = useState(null);
   const [limitReached, setLimitReached] = useState(false);
   const [welcomeMessage, setWelcomeMessage] = useState(DEFAULT_WELCOME);
+  const [thinkingText, setThinkingText] = useState("");
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -93,6 +107,21 @@ Was kann ich heute für dich tun?`;
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let interval;
+    if (isTyping) {
+      setThinkingText(THINKING_TEXTS[0]);
+      let i = 1;
+      interval = setInterval(() => {
+        setThinkingText(THINKING_TEXTS[i]);
+        i = (i + 1) % THINKING_TEXTS.length;
+      }, 1800);
+    } else {
+      setThinkingText("");
+    }
+    return () => clearInterval(interval);
+  }, [isTyping]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -379,28 +408,28 @@ Was kann ich heute für dich tun?`;
         ))}
 
         {isTyping && (
-          <div
-            style={{
-              display: "flex",
-              gap: "4px",
-              padding: "12px 16px",
-              alignItems: "center",
-            }}
-          >
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                style={{
-                  width: "8px",
-                  height: "8px",
-                  borderRadius: "50%",
-                  background: "#e63228",
-                  animation: "typing 1.2s infinite",
-                  animationDelay: `${i * 0.2}s`,
-                  opacity: 0.7,
-                }}
-              />
-            ))}
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            padding: "12px 16px",
+          }}>
+            <div style={{
+              width: "8px",
+              height: "8px",
+              borderRadius: "50%",
+              background: "#e63228",
+              animation: "typing 1.2s infinite",
+              flexShrink: 0,
+            }} />
+            <span style={{
+              fontSize: "13px",
+              color: "#888",
+              fontStyle: "italic",
+              transition: "opacity 0.3s ease",
+            }}>
+              {thinkingText}
+            </span>
           </div>
         )}
 
