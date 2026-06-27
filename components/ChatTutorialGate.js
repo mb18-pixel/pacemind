@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import ChatTutorialOverlay from "@/components/ChatTutorialOverlay";
+import MobileTutorialOverlay from "@/components/MobileTutorialOverlay";
 
 const STEPS = [
   {
@@ -33,6 +34,34 @@ const STEPS = [
   },
 ];
 
+const MOBILE_STEPS = [
+  {
+    key: "chat",
+    emoji: "🧠",
+    title: "Dein Coach",
+    text: "Hier ist dein persönlicher Laufcoach. Stell ihm alles – er kennt deinen Plan, deine Läufe und passt sich dir an.",
+  },
+  {
+    key: "laeufe",
+    emoji: "🏃",
+    title: "Läufe eintragen",
+    text: "Hier trägst du deine Trainings ein – oder sag es einfach dem Coach: 'Ich bin heute 8km gelaufen'",
+  },
+  {
+    key: "kalender",
+    emoji: "📅",
+    title: "Dein Trainingsplan",
+    text: "Hier siehst du deinen Trainingsplan. Tippe auf ein Training für alle Details.",
+  },
+  {
+    key: "mehr",
+    emoji: "⚙️",
+    title: "Mehr & Einstellungen",
+    text: "Unter 'Mehr' findest du Feedback, Impressum und alles Weitere.",
+    isFinal: true,
+  },
+];
+
 async function markTutorialDone() {
   const res = await fetch("/api/profile/update", {
     method: "POST",
@@ -48,8 +77,18 @@ export default function ChatTutorialGate() {
   const [open, setOpen] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [checked, setChecked] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  const steps = useMemo(() => STEPS, []);
+  useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth < 768);
+    }
+    handleResize(); // Initial check
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const steps = useMemo(() => (isMobile ? MOBILE_STEPS : STEPS), [isMobile]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -107,8 +146,12 @@ export default function ChatTutorialGate() {
   }, [finish]);
 
   const onNext = useCallback(() => {
-    setStepIndex((i) => Math.min(i + 1, steps.length - 1));
-  }, [steps.length]);
+    if (isMobile) {
+      setStepIndex((i) => Math.min(i + 1, MOBILE_STEPS.length - 1));
+    } else {
+      setStepIndex((i) => Math.min(i + 1, STEPS.length - 1));
+    }
+  }, [isMobile]);
 
   const onLater = useCallback(() => {
     finish();
@@ -116,15 +159,27 @@ export default function ChatTutorialGate() {
 
   if (!checked) return null;
 
-  return (
-    <ChatTutorialOverlay
-      open={open}
-      stepIndex={stepIndex}
-      steps={steps}
-      onSkip={onSkip}
-      onNext={onNext}
-      onLater={onLater}
-    />
-  );
+  if (isMobile) {
+    return (
+      <MobileTutorialOverlay
+        open={open}
+        stepIndex={stepIndex}
+        steps={steps}
+        onNext={onNext}
+        onLater={onLater}
+      />
+    );
+  } else {
+    return (
+      <ChatTutorialOverlay
+        open={open}
+        stepIndex={stepIndex}
+        steps={steps}
+        onSkip={onSkip}
+        onNext={onNext}
+        onLater={onLater}
+      />
+    );
+  }
 }
 
