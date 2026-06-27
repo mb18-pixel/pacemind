@@ -5,6 +5,9 @@ import Footer from "@/components/Footer";
 import MainLayout from "@/components/MainLayout";
 import FeedbackWidget from "@/components/FeedbackWidget";
 import CookieBanner from "@/components/CookieBanner";
+import PostHogProvider from "@/components/PostHogProvider";
+import PostHogPageView from "@/components/PostHogPageView";
+import { Suspense } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -56,13 +59,18 @@ export default function RootLayout({ children }) {
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body className="app-body flex min-h-full flex-col bg-bg font-sans text-text">
-        <Navbar />
-        <MainLayout>
-          {children}
-        </MainLayout>
-        <Footer />
-        <FeedbackWidget />
-        <CookieBanner />
+        <PostHogProvider>
+          <Suspense fallback={null}>
+            <PostHogPageView />
+          </Suspense>
+          <Navbar />
+          <MainLayout>
+            {children}
+          </MainLayout>
+          <Footer />
+          <FeedbackWidget />
+          <CookieBanner />
+        </PostHogProvider>
 
         <script
           dangerouslySetInnerHTML={{
