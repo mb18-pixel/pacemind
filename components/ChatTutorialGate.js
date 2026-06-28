@@ -40,24 +40,28 @@ const MOBILE_STEPS = [
     emoji: "🧠",
     title: "Dein Coach",
     text: "Hier ist dein persönlicher Laufcoach. Stell ihm alles – er kennt deinen Plan, deine Läufe und passt sich dir an.",
+    target: '[data-tutorial="chat-input"]',
   },
   {
     key: "laeufe",
     emoji: "🏃",
     title: "Läufe eintragen",
     text: "Hier trägst du deine Trainings ein – oder sag es einfach dem Coach: 'Ich bin heute 8km gelaufen'",
+    target: '[data-tutorial="nav-laeufe"]',
   },
   {
     key: "kalender",
     emoji: "📅",
     title: "Dein Trainingsplan",
     text: "Hier siehst du deinen Trainingsplan. Tippe auf ein Training für alle Details.",
+    target: '[data-tutorial="nav-kalender"]',
   },
   {
     key: "mehr",
     emoji: "⚙️",
     title: "Mehr & Einstellungen",
     text: "Unter 'Mehr' findest du Feedback, Impressum und alles Weitere.",
+    target: '[data-tutorial="nav-mehr"]',
     isFinal: true,
   },
 ];

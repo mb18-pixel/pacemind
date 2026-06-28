@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function MobileTutorialOverlay({ open, stepIndex, steps, onNext, onLater }) {
+  const [highlightRect, setHighlightRect] = useState(null);
   // Prevent scrolling while overlay is open
   useEffect(() => {
     if (open) {
@@ -14,6 +15,26 @@ export default function MobileTutorialOverlay({ open, stepIndex, steps, onNext, 
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !steps || steps.length === 0) return;
+    const currentStep = steps[stepIndex];
+    
+    if (currentStep?.target) {
+      const el = document.querySelector(currentStep.target);
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        setHighlightRect({
+          top: rect.top,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        });
+        return;
+      }
+    }
+    setHighlightRect(null);
+  }, [open, steps, stepIndex]);
 
   if (!open || !steps || steps.length === 0) return null;
 
@@ -30,6 +51,9 @@ export default function MobileTutorialOverlay({ open, stepIndex, steps, onNext, 
     }
   }
 
+  const isBottomHalf = highlightRect && highlightRect.top > window.innerHeight / 2;
+  const cardAlignment = highlightRect ? (isBottomHalf ? "items-start pt-24" : "items-center") : "items-center";
+
   return (
     <div
       style={{
@@ -38,9 +62,26 @@ export default function MobileTutorialOverlay({ open, stepIndex, steps, onNext, 
         zIndex: 9999,
         background: "rgba(0, 0, 0, 0.85)",
       }}
-      className="flex items-center justify-center p-4 animate-in fade-in duration-300"
+      className={`flex justify-center p-4 animate-in fade-in duration-300 ${cardAlignment}`}
     >
-      <div className="bg-surface border border-border rounded-xl p-8 max-w-sm w-full mx-4 flex flex-col items-center text-center shadow-xl">
+      {highlightRect && (
+        <div
+          style={{
+            position: "fixed",
+            top: highlightRect.top - 8,
+            left: highlightRect.left - 8,
+            width: highlightRect.width + 16,
+            height: highlightRect.height + 16,
+            border: "2px solid #e63228",
+            borderRadius: "12px",
+            boxShadow: "0 0 0 4px rgba(230, 50, 40, 0.25)",
+            pointerEvents: "none",
+            zIndex: 9998,
+            animation: "pulse-ring 1.5s ease-in-out infinite",
+          }}
+        />
+      )}
+      <div className="bg-surface border border-border rounded-xl p-8 max-w-sm w-full mx-4 flex flex-col items-center text-center shadow-xl relative z-[10000]">
         <div className="text-5xl mb-6">{currentStep.emoji}</div>
         
         <h2 className="font-extrabold uppercase text-xl text-text mb-3 tracking-tight">
