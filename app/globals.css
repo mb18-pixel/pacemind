@@ -27,6 +27,19 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+button, a, [role="button"], [role="switch"], input, select, textarea {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+button, a, [role="button"], [role="switch"] {
+  min-height: 44px;
+  min-width: 44px;
 }
 
 html {
@@ -342,6 +355,8 @@ input, textarea {
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
+  /* Touch-Action für horizontales Scrollen explizit erlauben */
+  touch-action: pan-x;
 }
 
 .calendar-scroll::-webkit-scrollbar {
@@ -356,6 +371,25 @@ input, textarea {
 
 .calendar-day-card {
   scroll-snap-align: start;
+}
+
+/* Mobile: vertikales Layout */
+@media (max-width: 767px) {
+  .calendar-scroll {
+    overflow-x: visible;
+    scroll-snap-type: none;
+    touch-action: auto;
+  }
+
+  .calendar-scroll-inner {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .calendar-day-card {
+    min-width: unset !important;
+    width: 100%;
+  }
 }
 
 /* ── Chat mobile layout ── */

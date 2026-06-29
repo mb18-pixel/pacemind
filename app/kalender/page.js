@@ -83,7 +83,7 @@ export default function KalenderPage() {
                   key={entry.id || entry.datum}
                   type="button"
                   onClick={() => typ !== "pause" && setSelected(entry)}
-                  className={`calendar-day-card card min-h-[120px] min-w-[140px] shrink-0 snap-start border p-4 text-left transition-all ${color} ${
+                  className={`calendar-day-card card min-h-[120px] md:min-w-[140px] md:shrink-0 snap-start border p-4 text-left transition-all ${color} ${
                     isToday ? "ring-2 ring-accent" : ""
                   } ${typ === "pause" ? "opacity-70" : "hover:border-accent"}`}
                 >
