@@ -686,11 +686,6 @@ export default function OnboardingWizard() {
                     key={opt.value}
                     type="button"
                     onClick={() => updateForm({ geschlecht: opt.value })}
-                    style={{
-                      touchAction: 'manipulation',
-                      WebkitTapHighlightColor: 'transparent',
-                      cursor: 'pointer'
-                    }}
                     className={`rounded-md border px-4 py-3 text-sm font-bold uppercase tracking-wide transition-all ${
                       form.geschlecht === opt.value
                         ? "border-accent bg-accent/15 text-text shadow-[0_0_16px_rgba(230,50,40,0.25)]"
@@ -749,11 +744,6 @@ export default function OnboardingWizard() {
                         key={card.id}
                         type="button"
                         onClick={() => updateForm({ koerperfettanteil: valToSet })}
-                        style={{
-                          touchAction: 'manipulation',
-                          WebkitTapHighlightColor: 'transparent',
-                          cursor: 'pointer'
-                        }}
                         className={`flex flex-col items-center justify-center rounded-xl border p-3 text-center transition-all ${
                           isSelected
                             ? "border-accent bg-accent/15 text-text shadow-[0_0_12px_rgba(230,50,40,0.25)]"
@@ -793,11 +783,6 @@ export default function OnboardingWizard() {
                     setCustomKfaMode(!customKfaMode);
                     if (customKfaMode) updateForm({ koerperfettanteil: "" });
                   }}
-                  style={{
-                    touchAction: 'manipulation',
-                    WebkitTapHighlightColor: 'transparent',
-                    cursor: 'pointer'
-                  }}
                   className="text-xs font-semibold text-accent hover:underline"
                 >
                   {customKfaMode ? "← Zurück zur visuellen Auswahl" : "Ich weiß es genau (Manuelle Eingabe)"}
@@ -808,11 +793,6 @@ export default function OnboardingWizard() {
                     <button
                       type="button"
                       onClick={() => updateForm({ koerperfettanteil: "" })}
-                      style={{
-                        touchAction: 'manipulation',
-                        WebkitTapHighlightColor: 'transparent',
-                        cursor: 'pointer'
-                      }}
                       className="text-xs font-semibold text-text-muted hover:text-white"
                     >
                       Auswahl aufheben
@@ -866,11 +846,6 @@ export default function OnboardingWizard() {
                       <button
                         type="button"
                         onClick={() => selectCity(place)}
-                        style={{
-                          touchAction: 'manipulation',
-                          WebkitTapHighlightColor: 'transparent',
-                          cursor: 'pointer'
-                        }}
                         className="w-full px-4 py-3 text-left text-sm text-text transition-colors hover:bg-accent/10"
                       >
                         <span className="font-semibold">{place.name}</span>
@@ -917,11 +892,6 @@ export default function OnboardingWizard() {
                   key={opt.value}
                   type="button"
                   onClick={() => updateForm({ fitnesslevel: opt.value })}
-                  style={{
-                    touchAction: 'manipulation',
-                    WebkitTapHighlightColor: 'transparent',
-                    cursor: 'pointer'
-                  }}
                   className={`w-full rounded-md border p-5 text-left transition-all duration-200 ${
                     form.fitnesslevel === opt.value
                       ? "border-accent bg-accent/15 shadow-[0_0_20px_rgba(230,50,40,0.3)] scale-[1.02]"
@@ -959,11 +929,6 @@ export default function OnboardingWizard() {
                     key={opt.value}
                     type="button"
                     onClick={() => updateForm({ ziel: opt.value })}
-                    style={{
-                      touchAction: 'manipulation',
-                      WebkitTapHighlightColor: 'transparent',
-                      cursor: 'pointer'
-                    }}
                     className={`rounded-md border p-4 text-left transition-all duration-200 ${
                       form.ziel === opt.value
                         ? "border-accent bg-accent/15 shadow-[0_0_20px_rgba(230,50,40,0.3)] scale-[1.02]"
@@ -995,11 +960,6 @@ export default function OnboardingWizard() {
                     key={opt.value}
                     type="button"
                     onClick={() => updateForm({ ziel: opt.value })}
-                    style={{
-                      touchAction: 'manipulation',
-                      WebkitTapHighlightColor: 'transparent',
-                      cursor: 'pointer'
-                    }}
                     className={`rounded-md border p-4 text-left transition-all duration-200 ${
                       form.ziel === opt.value
                         ? "border-accent bg-accent/15 shadow-[0_0_20px_rgba(230,50,40,0.3)] scale-[1.02]"
@@ -1070,11 +1030,6 @@ export default function OnboardingWizard() {
                   key={opt.value}
                   type="button"
                   onClick={() => updateForm({ aktuelleTrainingsfrequenz: opt.value })}
-                  style={{
-                    touchAction: 'manipulation',
-                    WebkitTapHighlightColor: 'transparent',
-                    cursor: 'pointer'
-                  }}
                   className={`rounded-md border p-4 text-center font-bold uppercase tracking-wide transition-all ${
                     form.aktuelleTrainingsfrequenz === opt.value
                       ? "border-accent bg-accent/15 text-text shadow-[0_0_16px_rgba(230,50,40,0.25)]"
@@ -1111,11 +1066,6 @@ export default function OnboardingWizard() {
                   key={opt.value}
                   type="button"
                   onClick={() => updateForm({ aktuelleDistanz: opt.value })}
-                  style={{
-                    touchAction: 'manipulation',
-                    WebkitTapHighlightColor: 'transparent',
-                    cursor: 'pointer'
-                  }}
                   className={`rounded-md border p-4 text-center font-bold uppercase tracking-wide transition-all ${
                     form.aktuelleDistanz === opt.value
                       ? "border-accent bg-accent/15 text-text shadow-[0_0_16px_rgba(230,50,40,0.25)]"
@@ -1193,11 +1143,6 @@ export default function OnboardingWizard() {
                   setReferenzzeitFehler("");
                   goNext();
                 }}
-                style={{
-                  touchAction: 'manipulation',
-                  WebkitTapHighlightColor: 'transparent',
-                  cursor: 'pointer'
-                }}
                 className="btn-secondary w-full"
               >
                 Keine Referenzzeit (Überspringen)
@@ -1269,11 +1214,6 @@ export default function OnboardingWizard() {
                 <button
                   type="button"
                   onClick={() => setCustomGoalMode(true)}
-                  style={{
-                    touchAction: 'manipulation',
-                    WebkitTapHighlightColor: 'transparent',
-                    cursor: 'pointer'
-                  }}
                   className="btn-secondary flex-1"
                 >
                   Eigene Zeit eingeben
@@ -1331,11 +1271,6 @@ export default function OnboardingWizard() {
                               : "",
                           };
                           updateForm({ slots: newSlots });
-                        }}
-                        style={{
-                          touchAction: 'manipulation',
-                          WebkitTapHighlightColor: 'transparent',
-                          cursor: 'pointer'
                         }}
                         className={`relative h-7 w-12 rounded-md border transition-all ${
                           form.slots[index].verfuegbar
@@ -1474,8 +1409,7 @@ export default function OnboardingWizard() {
           {step > 1 ? (
             <button
               type="button"
-              onClick={goBack}
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', pointerEvents: 'auto' }}
+              onClick={goBack} style={{ pointerEvents: 'auto' }}
               className="flex items-center gap-2 rounded-md border border-border bg-transparent px-6 py-3 text-sm font-bold uppercase tracking-wide text-text transition-all duration-200 hover:border-accent hover:text-white active:scale-[0.98]"
             >
               <ArrowLeft size={18} />
@@ -1484,8 +1418,7 @@ export default function OnboardingWizard() {
           ) : (
             <button
               type="button"
-              onClick={() => router.push('/')}
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', pointerEvents: 'auto' }}
+              onClick={() => router.push('/')} style={{ pointerEvents: 'auto' }}
               className="flex items-center gap-2 rounded-md border border-border bg-transparent px-6 py-3 text-sm font-bold uppercase tracking-wide text-text transition-all duration-200 hover:border-accent hover:text-white active:scale-[0.98]"
             >
               <ArrowLeft size={18} />
@@ -1496,12 +1429,7 @@ export default function OnboardingWizard() {
           {step < totalSteps ? (
             <button
               type="button"
-              onClick={() => goNext()}
-              style={{
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent',
-                pointerEvents: 'auto',
-              }}
+              onClick={() => goNext()} style={{ pointerEvents: 'auto' }}
               className={`ml-auto flex items-center gap-2 rounded-md px-6 py-3 text-sm font-bold uppercase tracking-wide transition-all duration-200 ${
                 isStepValid()
                   ? "bg-accent text-white hover:shadow-[0_0_20px_rgba(230,50,40,0.5)] hover:scale-[1.02] active:scale-[0.98]"
@@ -1515,7 +1443,6 @@ export default function OnboardingWizard() {
             <button
               type="button"
               onClick={handleTrainingStarten}
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
               className="btn-primary ml-auto flex items-center gap-2"
             >
               Training starten →
@@ -1526,7 +1453,6 @@ export default function OnboardingWizard() {
               type="button"
               onClick={finishOnboarding}
               disabled={saving}
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
               className="btn-primary ml-auto flex items-center gap-2"
             >
               {saving ? (

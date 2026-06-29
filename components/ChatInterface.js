@@ -8,6 +8,14 @@ import { createClient } from "@/lib/supabase/client";
 const DEFAULT_WELCOME =
   "Hallo! Schreib mir kurz, was du heute brauchst – ich passe deinen Trainingsplan an und beantworte Fragen zum Training.";
 
+const MOTIVATIONAL_ENDINGS = [
+  "Was kann ich heute für dich tun?",
+  "Wie kann ich dir heute helfen?",
+  "Bereit für heute?",
+  "Was steht an?",
+  "Ich bin bereit. Du auch?",
+];
+
 const QUICK_REPLIES = [
   "Was steht heute an?",
   "Erkläre meinen Plan",
@@ -83,16 +91,33 @@ export default function ChatInterface({ initialPrompt = null }) {
 
         if (!cancelled && profil?.vorname) {
           const stunde = new Date().getHours();
-          const tageszeit = stunde < 12 ? 'Morgen' : stunde < 18 ? 'Tag' : 'Abend';
+          let tageszeit = "";
+          if (stunde >= 5 && stunde < 11) tageszeit = "Guten Morgen";
+          else if (stunde >= 11 && stunde < 14) tageszeit = "Guten Mittag";
+          else if (stunde >= 14 && stunde < 18) tageszeit = "Guten Nachmittag";
+          else if (stunde >= 18 && stunde < 22) tageszeit = "Guten Abend";
+          else tageszeit = "Noch wach?";
           
-          const istGesundheitsziel = ['gesund bleiben', 'abnehmen', 'fit bleiben'].includes(profil.hauptziel?.toLowerCase());
+          const heuteISO = new Date().toISOString().split("T")[0];
+          const { data: training } = await supabase
+            .from("training_plan")
+            .select("trainingstyp, beschreibung")
+            .eq("user_id", user.id)
+            .eq("datum", heuteISO)
+            .maybeSingle();
           
-          const begruessung = `Guten ${tageszeit}, ${profil.vorname}! ${
-            profil.hauptziel && !istGesundheitsziel 
-              ? `Du trainierst für ${profil.hauptziel}${profil.ziel_datum ? ` am ${new Date(profil.ziel_datum).toLocaleDateString('de-DE')}` : ''}.` 
-              : 'Du trainierst für deine Gesundheit – das beste Ziel.'
+          let trainingText = "";
+          if (training) {
+            if (training.trainingstyp?.toLowerCase() === "ruhetag") {
+              trainingText = "Heute ist Ruhetag — gönn dir die Pause.";
+            } else {
+              const typ = training.trainingstyp || "Training";
+              trainingText = `Heute steht ein ${typ} für dich an.`;
+            }
           }
-Was kann ich heute für dich tun?`;
+          
+          const ending = MOTIVATIONAL_ENDINGS[Math.floor(Math.random() * MOTIVATIONAL_ENDINGS.length)];
+          const begruessung = `${tageszeit}, ${profil.vorname}! 💪 ${trainingText ? trainingText + " " : ""}${ending}`;
           
           setWelcomeMessage(begruessung);
         }
@@ -210,6 +235,8 @@ Was kann ich heute für dich tun?`;
             role: m.role,
             content: m.content,
           })),
+          localTime: new Date().toISOString(),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),
       });
 

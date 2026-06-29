@@ -383,12 +383,16 @@ input, textarea {
 
   .calendar-scroll-inner {
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
   }
 
   .calendar-day-card {
     min-width: unset !important;
     width: 100%;
+  }
+
+  .feedback-widget-root {
+    display: none;
   }
 }
 

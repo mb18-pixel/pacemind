@@ -82,8 +82,10 @@ export default function KalenderPage() {
                 <button
                   key={entry.id || entry.datum}
                   type="button"
+                  disabled={typ === "pause"}
+                  style={{ touchAction: 'manipulation' }}
                   onClick={() => typ !== "pause" && setSelected(entry)}
-                  className={`calendar-day-card card min-h-[120px] md:min-w-[140px] md:shrink-0 snap-start border p-4 text-left transition-all ${color} ${
+                  className={`calendar-day-card card min-h-[80px] md:min-h-[120px] md:min-w-[140px] md:shrink-0 snap-start border p-3 md:p-4 text-left transition-all ${color} ${
                     isToday ? "ring-2 ring-accent" : ""
                   } ${typ === "pause" ? "opacity-70" : "hover:border-accent"}`}
                 >

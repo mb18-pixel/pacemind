@@ -36,6 +36,7 @@ export default function CookieBanner() {
         background: "#111",
         borderTop: "1px solid #222",
         padding: "16px 24px",
+        paddingBottom: "max(16px, env(safe-area-inset-bottom))",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",

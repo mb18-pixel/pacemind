@@ -3,18 +3,23 @@
 import { useRouter } from "next/navigation";
 import AuthForm from "@/components/AuthForm";
 import { createClient } from "@/lib/supabase/client";
+import posthog from "posthog-js";
 
 export default function LoginPage() {
   const router = useRouter();
   const supabase = createClient();
 
   async function handleLogin({ email, password }) {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) throw error;
+
+    if (data?.user) {
+      posthog.identify(data.user.id, { email: data.user.email });
+    }
 
     router.push("/chat");
     router.refresh();

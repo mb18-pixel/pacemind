@@ -546,7 +546,7 @@ export async function POST(request) {
       );
     }
 
-    const { messages } = await request.json();
+    const { messages, localTime, timezone } = await request.json();
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return Response.json({ error: "Nachrichten fehlen" }, { status: 400 });
@@ -679,7 +679,7 @@ export async function POST(request) {
       }
     );
 
-    const systemInstruction = buildSystemPrompt(
+    let systemInstruction = buildSystemPrompt(
       runs,
       profil,
       weatherContext,
@@ -687,6 +687,11 @@ export async function POST(request) {
       trainingSlots,
       extraContextPayload
     );
+    
+    if (localTime) {
+      const localDateStr = new Date(localTime).toLocaleString('de-DE', { timeZone: timezone || 'Europe/Berlin' });
+      systemInstruction += `\n\nWICHTIGE KONTEXTINFORMATION:\nDie aktuelle lokale Zeit des Nutzers ist ${localDateStr} (Zeitzone: ${timezone || 'Europe/Berlin'}). Berücksichtige diese Tageszeit bei deinen Antworten.`;
+    }
 
     const geminiApiKey = process.env.GEMINI_API_KEY;
 

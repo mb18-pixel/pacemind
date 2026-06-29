@@ -68,6 +68,7 @@ export default function FeedbackWidget() {
 
   return (
     <div
+      className="feedback-widget-root"
       style={{
         position: "fixed",
         top: "24px",
